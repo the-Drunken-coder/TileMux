@@ -35,7 +35,7 @@ export function tileJsonForSource(request: Request, source: TileSource) {
     source_maxzoom: sourceMaxzoom,
     fillzoom: sourceMaxzoom,
     exposed_maxzoom: source.maxzoom,
-    bounds: [-180, -85.051129, 180, 85.051129],
+    bounds: source.bounds ?? [-180, -85.051129, 180, 85.051129],
     attribution: source.attribution || "",
   };
 }

@@ -7,6 +7,7 @@ export type SanitizedSource = {
   minzoom: number;
   maxzoom: number;
   sourceMaxzoom?: number;
+  bounds?: [number, number, number, number];
   ext: string;
   attribution?: string;
   browserTileTemplate?: string;

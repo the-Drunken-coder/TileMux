@@ -28,6 +28,7 @@ const EXPECTED_PUBLIC_SOURCE_IDS = [
   "openmaps-opentopomap",
   "openmaps-openhikingmap",
   "local-r2",
+  "osm-standard-dark",
 ];
 
 function unreachable(message: string): never {
@@ -235,6 +236,34 @@ describe("Worker routes", () => {
     expect(tileJson.maxzoom).toBe(20);
     expect(tileJson.source_maxzoom).toBe(20);
     expect(tileJson.exposed_maxzoom).toBe(22);
+  });
+
+  it("returns bounded styles and TileJSON for OpenStreetMap Standard Dark", async () => {
+    const styleResponse = await fetchPath("/styles/osm-standard-dark.json");
+    const tileJsonResponse = await fetchPath("/tilejson/osm-standard-dark.json");
+    const style = (await styleResponse.json()) as {
+      sources: Record<string, { tiles: string[]; bounds?: number[]; maxzoom: number }>;
+    };
+    const tileJson = (await tileJsonResponse.json()) as {
+      tiles: string[];
+      minzoom: number;
+      maxzoom: number;
+      bounds: number[];
+    };
+
+    expect(styleResponse.status).toBe(200);
+    expect(tileJsonResponse.status).toBe(200);
+    expect(style.sources["osm-standard-dark"]).toMatchObject({
+      tiles: ["https://tilemux.test/tiles/osm-standard-dark/{z}/{x}/{y}.png"],
+      bounds: [-77.04, 38.889, -76.995, 38.91],
+      maxzoom: 16,
+    });
+    expect(tileJson).toMatchObject({
+      tiles: ["https://tilemux.test/tiles/osm-standard-dark/{z}/{x}/{y}.png"],
+      minzoom: 12,
+      maxzoom: 16,
+      bounds: [-77.04, 38.889, -76.995, 38.91],
+    });
   });
 
   it("keeps API style and TileJSON routes private", async () => {

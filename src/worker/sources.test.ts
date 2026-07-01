@@ -26,6 +26,7 @@ const ENABLED_SOURCE_IDS = [
   "openmaps-opentopomap",
   "openmaps-openhikingmap",
   "local-r2",
+  "osm-standard-dark",
 ];
 
 describe("sources", () => {
@@ -83,5 +84,19 @@ describe("sources", () => {
         "TileMux/0.0",
       );
     }
+  });
+
+  it("exposes bounded R2 metadata for OpenStreetMap Standard Dark", () => {
+    const sanitized = sanitizeSource(SOURCES["osm-standard-dark"]);
+
+    expect(sanitized).toMatchObject({
+      id: "osm-standard-dark",
+      kind: "r2-xyz",
+      minzoom: 12,
+      maxzoom: 16,
+      bounds: [-77.04, 38.889, -76.995, 38.91],
+      supportsTileJson: true,
+      supportsGeneratedStyle: true,
+    });
   });
 });

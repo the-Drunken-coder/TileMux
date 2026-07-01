@@ -46,6 +46,7 @@ export type BaseSource = {
   minzoom: number;
   maxzoom: number;
   sourceMaxzoom?: number;
+  bounds?: readonly [number, number, number, number];
   ext: string;
   attribution?: string;
   cachePolicy: CachePolicy;
@@ -87,6 +88,7 @@ export type SanitizedSource = Pick<
   | "minzoom"
   | "maxzoom"
   | "sourceMaxzoom"
+  | "bounds"
   | "ext"
   | "attribution"
   | "cachePolicy"
@@ -448,6 +450,25 @@ export const SOURCES = {
     cacheTtlSeconds: 31536000,
     enabled: true,
   },
+  "osm-standard-dark": {
+    id: "osm-standard-dark",
+    name: "OpenStreetMap Standard Dark (DC Sample)",
+    provider: {
+      kind: "r2-xyz",
+      r2KeyTemplate: "tiles/osm-standard-dark/{z}/{x}/{y}.{ext}",
+    },
+    format: "raster",
+    tileSize: 256,
+    minzoom: 12,
+    maxzoom: 16,
+    bounds: [-77.04, 38.889, -76.995, 38.91],
+    ext: "png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, OpenStreetMap Standard Dark',
+    cachePolicy: "ttl",
+    cacheTtlSeconds: 31536000,
+    enabled: true,
+  },
   "pmtiles-r2-todo": {
     id: "pmtiles-r2-todo",
     name: "PMTiles R2 TODO",
@@ -493,6 +514,7 @@ export function sanitizeSource(source: TileSource): SanitizedSource {
     minzoom: source.minzoom,
     maxzoom: source.maxzoom,
     sourceMaxzoom: source.sourceMaxzoom,
+    bounds: source.bounds,
     ext: source.ext,
     attribution: source.attribution,
     cachePolicy: source.cachePolicy,

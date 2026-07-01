@@ -15,8 +15,8 @@ TileMux is deployed as a Cloudflare Worker.
 
 Latest observed deployment from `npx wrangler deployments list`:
 
-- Created: `2026-07-01T12:00:10.424Z`
-- Version ID: `f9115562-ab45-407c-b07c-3043420e35d9`
+- Created: `2026-07-01T18:40:38.608Z`
+- Version ID: `89b1bef0-bf79-40b9-9155-1806386b1876`
 - Source: `Unknown (deployment)`
 - Author: `laraujo123546@gmail.com`
 
@@ -40,12 +40,15 @@ The production Worker is configured from `wrangler.jsonc`:
 - Asset binding: `ASSETS`
 - R2 binding: `TILE_BUCKET`
 - R2 bucket: `tilemux-tiles`
+- R2 hosted source prefix: `tiles/osm-standard-dark/`
 - `ALLOWED_ORIGINS`: `self`
 - Worker-first routes: `/api/*`, `/sources.json`, `/tiles/*`, `/styles/*`,
   `/tilejson/*`
 
-The R2 bucket `tilemux-tiles` exists in Cloudflare. At the last verification it
-was empty, which is expected unless an `r2-xyz` source has uploaded tiles.
+The R2 bucket `tilemux-tiles` exists in Cloudflare. The `osm-standard-dark`
+source serves sample tiles from `tiles/osm-standard-dark/{z}/{x}/{y}.png`.
+Those objects were populated from the `osm-standard-dark` GitHub Actions
+artifact `osm-standard-dark-dc-xyz-directory` from run `28538585097`.
 
 ## Secrets
 

@@ -31,6 +31,7 @@ export function styleResponseForSource(
         tileSize: source.tileSize,
         minzoom: source.minzoom,
         maxzoom: sourceMaxzoom,
+        ...(source.bounds ? { bounds: source.bounds } : {}),
         attribution: source.attribution || "",
       },
     },

@@ -17,6 +17,10 @@ TileMux returns them.
 ## Bundled Open Sources
 
 - `osm-standard`: OpenStreetMap Standard raster tiles.
+- `osm-standard-dark`: OpenStreetMap Standard Dark raster tiles served from R2.
+  The current tile set is the District of Columbia sample from
+  `https://github.com/the-Drunken-coder/osm-standard-dark`, covering bounds
+  `[-77.04, 38.889, -76.995, 38.91]` at zooms 12-16.
 - `cartoRaster`: CARTO Voyager raster tiles.
 - `esri-world-imagery`: Esri World Imagery raster tiles.
 - `usgs-topo`: USGS Topo raster tiles.
@@ -101,6 +105,19 @@ Migrated TileRelay sources use these Worker secret names:
 ```
 
 The R2 key template supports `{sourceId}`, `{z}`, `{x}`, `{y}`, and `{ext}`.
+
+## OpenStreetMap Standard Dark R2 Handoff
+
+The `osm-standard-dark` source expects PNG objects in the `tilemux-tiles` R2
+bucket using this key shape:
+
+```text
+tiles/osm-standard-dark/{z}/{x}/{y}.png
+```
+
+The source repo renders the same layout under `out/tiles/dark/{z}/{x}/{y}.png`.
+Upload or sync that directory into the R2 prefix above after rendering a new
+sample or downloading the GitHub Actions artifact.
 
 ## Cache Policy
 
