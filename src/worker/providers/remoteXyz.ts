@@ -38,7 +38,7 @@ function resolveRemoteTileUrlWithSecrets(
   const sensitiveValues: string[] = [];
 
   for (const [placeholder, secretName] of Object.entries(
-    source.secretPlaceholders || {},
+    source.provider.secretPlaceholders || {},
   )) {
     const secret = providerSecrets[secretName];
     if (!secret) {
@@ -51,20 +51,37 @@ function resolveRemoteTileUrlWithSecrets(
     sensitiveValues.push(secret);
   }
 
-  return { url: substituteTemplate(source.template, values), sensitiveValues };
+  return {
+    url: substituteTemplate(source.provider.template, values),
+    sensitiveValues,
+  };
 }
 
-function safeUpstreamHeaders(request: Request): Headers {
+function safeUpstreamHeaders(request: Request, source: RemoteXyzSource): Headers {
   const headers = new Headers();
   const accept = request.headers.get("Accept");
   const ifNoneMatch = request.headers.get("If-None-Match");
   const ifModifiedSince = request.headers.get("If-Modified-Since");
+
+  for (const [name, value] of Object.entries(
+    source.provider.requestHeaders || {},
+  )) {
+    headers.set(name, value);
+  }
 
   if (accept) headers.set("Accept", accept);
   if (ifNoneMatch) headers.set("If-None-Match", ifNoneMatch);
   if (ifModifiedSince) headers.set("If-Modified-Since", ifModifiedSince);
 
   return headers;
+}
+
+function responseContentType(source: RemoteXyzSource, upstream: Response): string {
+  const contentType = upstream.headers.get("Content-Type");
+
+  return contentType && contentType !== "application/octet-stream"
+    ? contentType
+    : contentTypeForExtension(source.ext);
 }
 
 export async function remoteXyzResponse(
@@ -83,7 +100,7 @@ export async function remoteXyzResponse(
   try {
     upstream = await fetch(upstreamUrl, {
       method: request.method === "HEAD" ? "HEAD" : "GET",
-      headers: safeUpstreamHeaders(request),
+      headers: safeUpstreamHeaders(request, source),
       cf: source.cachePolicy === "ttl" && source.cacheTtlSeconds
         ? { cacheEverything: true, cacheTtl: source.cacheTtlSeconds }
         : undefined,
@@ -99,8 +116,7 @@ export async function remoteXyzResponse(
   }
 
   const headers = new Headers({
-    "Content-Type":
-      upstream.headers.get("Content-Type") || contentTypeForExtension(source.ext),
+    "Content-Type": responseContentType(source, upstream),
     "Cache-Control": cacheControlHeader(
       source.cachePolicy,
       source.cacheTtlSeconds,

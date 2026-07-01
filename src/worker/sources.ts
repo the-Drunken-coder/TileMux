@@ -1,13 +1,45 @@
 import type { ProviderSecretName } from "./env";
 import type { CachePolicy } from "./utils/http";
 
-export type SourceKind = "debug-grid" | "remote-xyz" | "r2-xyz" | "pmtiles-r2";
+export type ProviderKind = "debug-grid" | "remote-xyz" | "r2-xyz" | "pmtiles-r2";
+export type SourceKind = ProviderKind;
 export type SourceFormat = "raster" | "vector";
+
+export type DebugGridProvider = {
+  kind: "debug-grid";
+};
+
+export type RemoteXyzProvider = {
+  kind: "remote-xyz";
+  template: string;
+  secretPlaceholders?: Record<string, ProviderSecretName>;
+  requestHeaders?: Record<string, string>;
+};
+
+export type R2XyzProvider = {
+  kind: "r2-xyz";
+  r2KeyTemplate: string;
+};
+
+export type PmtilesR2Provider = {
+  kind: "pmtiles-r2";
+  r2Key: string;
+};
+
+export type ProviderConfig =
+  | DebugGridProvider
+  | RemoteXyzProvider
+  | R2XyzProvider
+  | PmtilesR2Provider;
+
+export type SourceTransform = {
+  kind: "invert-raster";
+};
 
 export type BaseSource = {
   id: string;
   name: string;
-  kind: SourceKind;
+  provider: ProviderConfig;
   format: SourceFormat;
   tileSize: number;
   minzoom: number;
@@ -17,28 +49,25 @@ export type BaseSource = {
   cachePolicy: CachePolicy;
   cacheTtlSeconds?: number;
   enabled?: boolean;
+  transforms?: SourceTransform[];
   style?: Record<string, unknown>;
 };
 
 export type DebugGridSource = BaseSource & {
-  kind: "debug-grid";
+  provider: DebugGridProvider;
   format: "raster";
 };
 
 export type RemoteXyzSource = BaseSource & {
-  kind: "remote-xyz";
-  template: string;
-  secretPlaceholders?: Record<string, ProviderSecretName>;
+  provider: RemoteXyzProvider;
 };
 
 export type R2XyzSource = BaseSource & {
-  kind: "r2-xyz";
-  r2KeyTemplate: string;
+  provider: R2XyzProvider;
 };
 
 export type PmtilesR2Source = BaseSource & {
-  kind: "pmtiles-r2";
-  r2Key: string;
+  provider: PmtilesR2Provider;
 };
 
 export type TileSource =
@@ -51,7 +80,6 @@ export type SanitizedSource = Pick<
   TileSource,
   | "id"
   | "name"
-  | "kind"
   | "format"
   | "tileSize"
   | "minzoom"
@@ -60,6 +88,7 @@ export type SanitizedSource = Pick<
   | "attribution"
   | "cachePolicy"
 > & {
+  kind: ProviderKind;
   supportsTileJson: boolean;
   supportsGeneratedStyle: boolean;
 };
@@ -68,7 +97,7 @@ export const SOURCES = {
   "debug-grid": {
     id: "debug-grid",
     name: "Debug Grid",
-    kind: "debug-grid",
+    provider: { kind: "debug-grid" },
     format: "raster",
     tileSize: 256,
     minzoom: 0,
@@ -79,19 +108,77 @@ export const SOURCES = {
     cacheTtlSeconds: 31536000,
     enabled: true,
   },
-  "example-remote": {
-    id: "example-remote",
-    name: "Example Remote XYZ",
-    kind: "remote-xyz",
+  "osm-standard": {
+    id: "osm-standard",
+    name: "OpenStreetMap Standard",
+    provider: {
+      kind: "remote-xyz",
+      template: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      requestHeaders: {
+        "User-Agent":
+          "TileMux/0.0 (+https://github.com/the-Drunken-coder/TileMux)",
+      },
+    },
     format: "raster",
     tileSize: 256,
     minzoom: 0,
     maxzoom: 19,
     ext: "png",
-    template: "https://example.com/tiles/{z}/{x}/{y}.{ext}?token={PROVIDER_TOKEN}",
-    secretPlaceholders: {
-      PROVIDER_TOKEN: "CUSTOM_PROVIDER_KEY",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+    cachePolicy: "respect-upstream",
+    enabled: true,
+  },
+  "openmaps-opentopomap": {
+    id: "openmaps-opentopomap",
+    name: "OpenTopoMap",
+    provider: {
+      kind: "remote-xyz",
+      template: "https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png",
     },
+    format: "raster",
+    tileSize: 256,
+    minzoom: 0,
+    maxzoom: 17,
+    ext: "png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, <a href="https://opentopomap.org/about">OpenTopoMap</a>, <a href="https://openmaps.fr/">openmaps.fr</a>',
+    cachePolicy: "respect-upstream",
+    enabled: true,
+  },
+  "openmaps-openhikingmap": {
+    id: "openmaps-openhikingmap",
+    name: "OpenHikingMap",
+    provider: {
+      kind: "remote-xyz",
+      template: "https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png",
+    },
+    format: "raster",
+    tileSize: 256,
+    minzoom: 0,
+    maxzoom: 17,
+    ext: "png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, OpenHikingMap, <a href="https://openmaps.fr/">openmaps.fr</a>',
+    cachePolicy: "respect-upstream",
+    enabled: true,
+  },
+  "example-remote": {
+    id: "example-remote",
+    name: "Example Remote XYZ",
+    provider: {
+      kind: "remote-xyz",
+      template:
+        "https://example.com/tiles/{z}/{x}/{y}.{ext}?token={PROVIDER_TOKEN}",
+      secretPlaceholders: {
+        PROVIDER_TOKEN: "CUSTOM_PROVIDER_KEY",
+      },
+    },
+    format: "raster",
+    tileSize: 256,
+    minzoom: 0,
+    maxzoom: 19,
+    ext: "png",
     attribution: "Example provider",
     cachePolicy: "respect-upstream",
     enabled: false,
@@ -99,13 +186,15 @@ export const SOURCES = {
   "local-r2": {
     id: "local-r2",
     name: "Local R2 Tiles",
-    kind: "r2-xyz",
+    provider: {
+      kind: "r2-xyz",
+      r2KeyTemplate: "tiles/local-r2/{z}/{x}/{y}.{ext}",
+    },
     format: "raster",
     tileSize: 256,
     minzoom: 0,
     maxzoom: 22,
     ext: "png",
-    r2KeyTemplate: "tiles/local-r2/{z}/{x}/{y}.{ext}",
     attribution: "Private tiles",
     cachePolicy: "ttl",
     cacheTtlSeconds: 31536000,
@@ -114,13 +203,15 @@ export const SOURCES = {
   "pmtiles-r2-todo": {
     id: "pmtiles-r2-todo",
     name: "PMTiles R2 TODO",
-    kind: "pmtiles-r2",
+    provider: {
+      kind: "pmtiles-r2",
+      r2Key: "pmtiles/example.pmtiles",
+    },
     format: "vector",
     tileSize: 512,
     minzoom: 0,
     maxzoom: 14,
     ext: "mvt",
-    r2Key: "pmtiles/example.pmtiles",
     attribution: "Private PMTiles",
     cachePolicy: "none",
     enabled: false,
@@ -148,7 +239,7 @@ export function sanitizeSource(source: TileSource): SanitizedSource {
   return {
     id: source.id,
     name: source.name,
-    kind: source.kind,
+    kind: source.provider.kind,
     format: source.format,
     tileSize: source.tileSize,
     minzoom: source.minzoom,
@@ -156,7 +247,7 @@ export function sanitizeSource(source: TileSource): SanitizedSource {
     ext: source.ext,
     attribution: source.attribution,
     cachePolicy: source.cachePolicy,
-    supportsTileJson: source.kind !== "pmtiles-r2",
+    supportsTileJson: source.provider.kind !== "pmtiles-r2",
     supportsGeneratedStyle: source.format === "raster" || Boolean(source.style),
   };
 }

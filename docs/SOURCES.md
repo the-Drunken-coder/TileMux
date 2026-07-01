@@ -1,6 +1,11 @@
 # TileMux Sources
 
-TileMux sources are defined in `src/worker/sources.ts`. V0 intentionally uses TypeScript config instead of a database.
+TileMux sources are defined in `src/worker/sources.ts`. V0 intentionally uses
+TypeScript config instead of a database.
+
+A source is the user-facing map option. Its `provider` describes where tiles
+come from, and future `transforms` can describe how tiles are changed before
+TileMux returns them.
 
 ## Supported Kinds
 
@@ -9,22 +14,34 @@ TileMux sources are defined in `src/worker/sources.ts`. V0 intentionally uses Ty
 - `r2-xyz`: serves objects from R2 using a key template.
 - `pmtiles-r2`: reserved type for a future PMTiles adapter.
 
+## Bundled Open Sources
+
+- `osm-standard`: OpenStreetMap Standard raster tiles.
+- `openmaps-opentopomap`: OpenTopoMap raster tiles served through openmaps.fr.
+- `openmaps-openhikingmap`: OpenHikingMap raster tiles served through openmaps.fr.
+
+These are enabled by default so the app has real basemaps immediately. Each
+source uses `cachePolicy: "respect-upstream"` so TileMux forwards upstream cache
+behavior instead of inventing its own cache lifetime.
+
 ## Remote XYZ Example
 
 ```ts
 "example-remote": {
   id: "example-remote",
   name: "Example Remote XYZ",
-  kind: "remote-xyz",
+  provider: {
+    kind: "remote-xyz",
+    template: "https://example.com/tiles/{z}/{x}/{y}.{ext}?token={PROVIDER_TOKEN}",
+    secretPlaceholders: {
+      PROVIDER_TOKEN: "CUSTOM_PROVIDER_KEY",
+    },
+  },
   format: "raster",
   tileSize: 256,
   minzoom: 0,
   maxzoom: 19,
   ext: "png",
-  template: "https://example.com/tiles/{z}/{x}/{y}.{ext}?token={PROVIDER_TOKEN}",
-  secretPlaceholders: {
-    PROVIDER_TOKEN: "CUSTOM_PROVIDER_KEY",
-  },
   attribution: "Example provider",
   cachePolicy: "respect-upstream",
   enabled: false,
@@ -41,13 +58,15 @@ The bundled `example-remote` source stays disabled by default. To enable it, rep
 "local-r2": {
   id: "local-r2",
   name: "Local R2 Tiles",
-  kind: "r2-xyz",
+  provider: {
+    kind: "r2-xyz",
+    r2KeyTemplate: "tiles/local-r2/{z}/{x}/{y}.png",
+  },
   format: "raster",
   tileSize: 256,
   minzoom: 0,
   maxzoom: 22,
   ext: "png",
-  r2KeyTemplate: "tiles/local-r2/{z}/{x}/{y}.png",
   attribution: "Private tiles",
   cachePolicy: "ttl",
   cacheTtlSeconds: 31536000,

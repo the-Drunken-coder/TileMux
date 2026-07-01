@@ -12,7 +12,7 @@ export function resolveR2Key(
   source: R2XyzSource,
   coordinate: TileCoordinate,
 ): string {
-  return substituteTemplate(source.r2KeyTemplate, {
+  return substituteTemplate(source.provider.r2KeyTemplate, {
     sourceId: source.id,
     z: coordinate.z,
     x: coordinate.x,

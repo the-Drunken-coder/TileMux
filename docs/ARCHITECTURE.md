@@ -9,16 +9,22 @@ The Worker uses a small explicit router:
 1. `/api/health` is public.
 2. Private routes check `TILEMUX_API_KEY` from `Authorization: Bearer <key>` or `?key=<key>`.
 3. Source/style/tile routes resolve an enabled source from `src/worker/sources.ts`.
-4. Tile requests dispatch to a provider adapter by `source.kind`.
+4. Tile requests dispatch to a provider adapter by `source.provider.kind`.
 
 ## Source Registry Model
 
-V0 source config lives in TypeScript. This keeps the first version simple and reviewable. The supported kinds are:
+V0 source config lives in TypeScript. This keeps the first version simple and
+reviewable. A source is the user-facing map option; its nested `provider`
+describes where tiles come from. The supported provider kinds are:
 
 - `debug-grid`: generated SVG/PNG raster tiles.
 - `remote-xyz`: server-side proxy for upstream XYZ templates.
 - `r2-xyz`: object lookup through the `TILE_BUCKET` R2 binding.
 - `pmtiles-r2`: typed placeholder returning `501`.
+
+Remote sources such as OpenStreetMap and OpenTopoMap are ordinary `remote-xyz`
+provider instances, not bespoke adapters. Add a new provider adapter only when
+the retrieval mechanics change.
 
 Disabled sources are not returned by `/api/sources` and behave like unknown sources on public routes.
 
@@ -42,6 +48,8 @@ V0 is config-file-driven. D1 would add migrations, admin workflows, and source C
 
 - Add short-lived scoped tokens or signed URLs for clients that cannot send
   `Authorization` headers.
+- Add a transform pipeline for raster operations such as invert, grayscale, or
+  tint.
 - Implement a PMTiles R2 adapter with byte-range reads.
 - Rewrite external style JSON safely without exposing provider secrets.
 - Add glyph and sprite proxying for vector styles.

@@ -14,7 +14,7 @@ export function tileUrlForRequest(
 }
 
 export function tileJsonForSource(request: Request, source: TileSource) {
-  const ext = source.kind === "debug-grid" ? "png" : source.ext;
+  const ext = source.provider.kind === "debug-grid" ? "png" : source.ext;
 
   return {
     tilejson: "3.0.0",

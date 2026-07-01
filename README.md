@@ -79,16 +79,18 @@ Edit `src/worker/sources.ts`:
 "my-provider": {
   id: "my-provider",
   name: "My Provider",
-  kind: "remote-xyz",
+  provider: {
+    kind: "remote-xyz",
+    template: "https://provider.example/tiles/{z}/{x}/{y}.{ext}?token={PROVIDER_TOKEN}",
+    secretPlaceholders: {
+      PROVIDER_TOKEN: "CUSTOM_PROVIDER_KEY",
+    },
+  },
   format: "raster",
   tileSize: 256,
   minzoom: 0,
   maxzoom: 19,
   ext: "png",
-  template: "https://provider.example/tiles/{z}/{x}/{y}.{ext}?token={PROVIDER_TOKEN}",
-  secretPlaceholders: {
-    PROVIDER_TOKEN: "CUSTOM_PROVIDER_KEY",
-  },
   attribution: "Provider attribution",
   cachePolicy: "respect-upstream",
   enabled: true,
@@ -127,13 +129,15 @@ Add a source in `src/worker/sources.ts`:
 "private-raster": {
   id: "private-raster",
   name: "Private Raster",
-  kind: "r2-xyz",
+  provider: {
+    kind: "r2-xyz",
+    r2KeyTemplate: "tiles/private-raster/{z}/{x}/{y}.png",
+  },
   format: "raster",
   tileSize: 256,
   minzoom: 0,
   maxzoom: 22,
   ext: "png",
-  r2KeyTemplate: "tiles/private-raster/{z}/{x}/{y}.png",
   attribution: "Private tiles",
   cachePolicy: "ttl",
   cacheTtlSeconds: 31536000,

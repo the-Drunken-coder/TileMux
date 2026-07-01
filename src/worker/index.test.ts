@@ -86,6 +86,9 @@ describe("Worker routes", () => {
     expect(response.status).toBe(200);
     expect(payload.sources.map((source) => source.id)).toEqual([
       "debug-grid",
+      "osm-standard",
+      "openmaps-opentopomap",
+      "openmaps-openhikingmap",
       "local-r2",
     ]);
     expect(payload.sources[0]).toMatchObject({
@@ -96,6 +99,8 @@ describe("Worker routes", () => {
     });
     expect(payload.sources[0]).not.toHaveProperty("template");
     expect(payload.sources[0]).not.toHaveProperty("secretPlaceholders");
+    expect(payload.sources[1]).not.toHaveProperty("provider");
+    expect(payload.sources[1]).not.toHaveProperty("requestHeaders");
   });
 
   it("returns a generated MapLibre style for debug-grid", async () => {

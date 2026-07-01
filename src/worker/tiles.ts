@@ -1,5 +1,12 @@
 import type { RuntimeEnv } from "./env";
-import { getEnabledSource } from "./sources";
+import {
+  getEnabledSource,
+  type DebugGridSource,
+  type PmtilesR2Source,
+  type R2XyzSource,
+  type RemoteXyzSource,
+  type TileSource,
+} from "./sources";
 import { debugGridResponse } from "./providers/debugGrid";
 import { remoteXyzResponse } from "./providers/remoteXyz";
 import { r2XyzResponse } from "./providers/r2Xyz";
@@ -7,12 +14,28 @@ import { pmtilesTodoResponse } from "./providers/pmtilesTodo";
 import { HttpError } from "./utils/http";
 import { parseTilePath, validateZxy } from "./utils/zxy";
 
+function isDebugGridSource(source: TileSource): source is DebugGridSource {
+  return source.provider.kind === "debug-grid";
+}
+
+function isRemoteXyzSource(source: TileSource): source is RemoteXyzSource {
+  return source.provider.kind === "remote-xyz";
+}
+
+function isR2XyzSource(source: TileSource): source is R2XyzSource {
+  return source.provider.kind === "r2-xyz";
+}
+
+function isPmtilesR2Source(source: TileSource): source is PmtilesR2Source {
+  return source.provider.kind === "pmtiles-r2";
+}
+
 function allowedTileExtensions(source: ReturnType<typeof getEnabledSource>): string[] {
   if (!source) {
     return [];
   }
 
-  return source.kind === "debug-grid" ? [source.ext, "png"] : [source.ext];
+  return source.provider.kind === "debug-grid" ? [source.ext, "png"] : [source.ext];
 }
 
 export async function tileResponse(
@@ -43,14 +66,18 @@ export async function tileResponse(
     throw new HttpError(400, validation.message);
   }
 
-  switch (source.kind) {
-    case "debug-grid":
-      return debugGridResponse(request, source, validation.coordinate);
-    case "remote-xyz":
-      return remoteXyzResponse(request, env, source, validation.coordinate);
-    case "r2-xyz":
-      return r2XyzResponse(request, env, source, validation.coordinate);
-    case "pmtiles-r2":
-      return pmtilesTodoResponse(source);
+  if (isDebugGridSource(source)) {
+    return debugGridResponse(request, source, validation.coordinate);
   }
+  if (isRemoteXyzSource(source)) {
+    return remoteXyzResponse(request, env, source, validation.coordinate);
+  }
+  if (isR2XyzSource(source)) {
+    return r2XyzResponse(request, env, source, validation.coordinate);
+  }
+  if (isPmtilesR2Source(source)) {
+    return pmtilesTodoResponse(source);
+  }
+
+  throw new HttpError(500, "Unsupported source provider");
 }
