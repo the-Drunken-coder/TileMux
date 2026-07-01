@@ -23,6 +23,7 @@ const ENABLED_SOURCE_IDS = [
   "thunderforest-spinal-map",
   "thunderforest-pioneer",
   "maptiler-satellite",
+  "maptiler-osm-dark",
   "openmaps-opentopomap",
   "openmaps-openhikingmap",
   "local-r2",
@@ -59,6 +60,20 @@ describe("sources", () => {
     expect(sanitized).toMatchObject({
       id: "google-maps",
       sourceMaxzoom: 20,
+      maxzoom: 22,
+    });
+    expect("provider" in sanitized).toBe(false);
+    expect("secretPlaceholders" in sanitized).toBe(false);
+    expect("template" in sanitized).toBe(false);
+  });
+
+  it("keeps MapTiler OpenStreetMap Dark keyless in public metadata", () => {
+    const sanitized = sanitizeSource(SOURCES["maptiler-osm-dark"]);
+
+    expect(sanitized).toMatchObject({
+      id: "maptiler-osm-dark",
+      name: "MapTiler OpenStreetMap Dark",
+      kind: "remote-xyz",
       maxzoom: 22,
     });
     expect("provider" in sanitized).toBe(false);

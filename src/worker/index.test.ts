@@ -25,6 +25,7 @@ const EXPECTED_PUBLIC_SOURCE_IDS = [
   "thunderforest-spinal-map",
   "thunderforest-pioneer",
   "maptiler-satellite",
+  "maptiler-osm-dark",
   "openmaps-opentopomap",
   "openmaps-openhikingmap",
   "local-r2",

@@ -33,7 +33,7 @@ TileMux returns them.
 - Azure Maps/Microsoft: `bing-aerial`, `bing-roads`.
 - Mapbox: `mapbox-streets`, `mapbox-satellite`, `mapbox-outdoors`, `mapbox-dark`.
 - Thunderforest: `thunderforest-landscape`, `thunderforest-outdoors`, `thunderforest-transport-dark`, `thunderforest-spinal-map`, `thunderforest-pioneer`.
-- MapTiler: `maptiler-satellite`.
+- MapTiler: `maptiler-satellite`, `maptiler-osm-dark`.
 
 These are enabled by default so the app has real basemaps immediately. Each
 source uses `cachePolicy: "respect-upstream"` so TileMux forwards upstream cache

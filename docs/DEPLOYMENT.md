@@ -15,8 +15,8 @@ TileMux is deployed as a Cloudflare Worker.
 
 Latest observed deployment from `npx wrangler deployments list`:
 
-- Created: `2026-07-01T19:12:16.387Z`
-- Version ID: `24a265bf-2b80-4cc0-bd8e-c689bc80b0fe`
+- Created: `2026-07-01T19:51:56.122Z`
+- Version ID: `a29c6928-4e57-4c40-8b16-4c2c0237cf82`
 - Source: `Unknown (deployment)`
 - Author: `laraujo123546@gmail.com`
 
