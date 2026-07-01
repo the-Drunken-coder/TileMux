@@ -94,12 +94,15 @@ describe("Worker routes", () => {
     const response = await fetchPath(`/api/styles/debug-grid.json?key=${TEST_KEY}`);
     const style = (await response.json()) as {
       version: number;
-      sources: Record<string, unknown>;
+      sources: Record<string, { tiles: string[] }>;
     };
 
     expect(response.status).toBe(200);
     expect(style.version).toBe(8);
     expect(style.sources["debug-grid"]).toBeDefined();
+    expect(style.sources["debug-grid"].tiles[0]).toBe(
+      `https://tilemux.test/tiles/debug-grid/{z}/{x}/{y}.png?key=${TEST_KEY}`,
+    );
   });
 
   it("returns TileJSON for debug-grid", async () => {
@@ -126,6 +129,24 @@ describe("Worker routes", () => {
     expect(response.headers.get("Content-Type")).toContain("image/svg+xml");
     expect(response.headers.get("X-TileMux-Source")).toBe("debug-grid");
     expect(body).toContain("debug-grid z0 x0 y0");
+  });
+
+  it("serves a debug-grid PNG tile for MapLibre raster rendering", async () => {
+    const response = await fetchPath(`/tiles/debug-grid/0/0/0.png?key=${TEST_KEY}`);
+    const body = new Uint8Array(await response.arrayBuffer());
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe("image/png");
+    expect(Array.from(body.slice(0, 8))).toEqual([
+      137,
+      80,
+      78,
+      71,
+      13,
+      10,
+      26,
+      10,
+    ]);
   });
 
   it("rejects a wrong API key", async () => {

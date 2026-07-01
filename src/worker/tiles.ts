@@ -7,6 +7,14 @@ import { pmtilesTodoResponse } from "./providers/pmtilesTodo";
 import { HttpError } from "./utils/http";
 import { parseTilePath, validateZxy } from "./utils/zxy";
 
+function allowedTileExtensions(source: ReturnType<typeof getEnabledSource>): string[] {
+  if (!source) {
+    return [];
+  }
+
+  return source.kind === "debug-grid" ? [source.ext, "png"] : [source.ext];
+}
+
 export async function tileResponse(
   request: Request,
   env: RuntimeEnv,
@@ -26,7 +34,11 @@ export async function tileResponse(
     throw new HttpError(404, "Unknown source");
   }
 
-  const validation = validateZxy(parsed, source);
+  const validation = validateZxy(parsed, {
+    minzoom: source.minzoom,
+    maxzoom: source.maxzoom,
+    ext: allowedTileExtensions(source),
+  });
   if (!validation.ok) {
     throw new HttpError(400, validation.message);
   }

@@ -34,4 +34,13 @@ describe("zxy utilities", () => {
       ),
     ).toEqual({ ok: false, message: "Invalid tile extension" });
   });
+
+  it("allows multiple configured tile extensions", () => {
+    expect(
+      validateZxy(
+        { zRaw: "1", xRaw: "0", yRaw: "1", ext: "png" },
+        { minzoom: 0, maxzoom: 22, ext: ["svg", "png"] },
+      ),
+    ).toEqual({ ok: true, coordinate: { z: 1, x: 0, y: 1, ext: "png" } });
+  });
 });

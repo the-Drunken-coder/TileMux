@@ -17,12 +17,16 @@ export function styleResponseForSource(
     );
   }
 
+  // MapLibre's raster pipeline may reject SVG image tiles, so generated debug
+  // styles use the PNG debug-grid variant while TileJSON/sample URLs stay SVG.
+  const tileExtension = source.kind === "debug-grid" ? "png" : source.ext;
+
   return jsonResponse({
     version: 8,
     sources: {
       [source.id]: {
         type: "raster",
-        tiles: [tileUrlForRequest(request, source)],
+        tiles: [tileUrlForRequest(request, source, tileExtension)],
         tileSize: source.tileSize,
         attribution: source.attribution || "",
       },

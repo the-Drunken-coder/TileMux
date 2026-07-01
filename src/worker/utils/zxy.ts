@@ -8,7 +8,7 @@ export type TileCoordinate = {
 export type TileValidationOptions = {
   minzoom: number;
   maxzoom: number;
-  ext: string;
+  ext: string | readonly string[];
 };
 
 export type TileValidationResult =
@@ -79,7 +79,12 @@ export function validateZxy(
     return { ok: false, message: "Tile coordinate out of range" };
   }
 
-  if (!SUPPORTED_EXTENSIONS.has(ext) || ext !== options.ext.toLowerCase()) {
+  const allowedExtensions =
+    typeof options.ext === "string"
+      ? [options.ext.toLowerCase()]
+      : options.ext.map((value) => value.toLowerCase());
+
+  if (!SUPPORTED_EXTENSIONS.has(ext) || !allowedExtensions.includes(ext)) {
     return { ok: false, message: "Invalid tile extension" };
   }
 

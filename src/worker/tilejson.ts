@@ -1,11 +1,15 @@
 import { extractApiKey } from "./auth";
 import type { TileSource } from "./sources";
 
-export function tileUrlForRequest(request: Request, source: TileSource): string {
+export function tileUrlForRequest(
+  request: Request,
+  source: TileSource,
+  ext = source.ext,
+): string {
   const url = new URL(request.url);
   const key = extractApiKey(request) || "";
   return `${url.origin}/tiles/${encodeURIComponent(source.id)}/{z}/{x}/{y}.${
-    source.ext
+    ext
   }?key=${encodeURIComponent(key)}`;
 }
 
