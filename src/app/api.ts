@@ -26,25 +26,23 @@ export type TileTestResult = {
   elapsedMs: number;
 };
 
-const API_KEY_STORAGE_KEY = "tilemux.apiKey";
+let inMemoryApiKey = "";
 
 export function storedApiKey(): string {
-  return sessionStorage.getItem(API_KEY_STORAGE_KEY) || "";
+  return inMemoryApiKey;
 }
 
 export function storeApiKey(apiKey: string): void {
-  if (apiKey) {
-    sessionStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
-  } else {
-    sessionStorage.removeItem(API_KEY_STORAGE_KEY);
-  }
+  inMemoryApiKey = apiKey;
+}
+
+export function authHeaders(apiKey: string): HeadersInit {
+  return apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
 }
 
 export async function fetchSources(apiKey: string): Promise<SanitizedSource[]> {
   const response = await fetch("/api/sources", {
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-    },
+    headers: authHeaders(apiKey),
   });
 
   if (!response.ok) {
@@ -55,20 +53,17 @@ export async function fetchSources(apiKey: string): Promise<SanitizedSource[]> {
   return payload.sources;
 }
 
-export function styleUrl(sourceId: string, apiKey: string): string {
-  return `/api/styles/${encodeURIComponent(sourceId)}.json?key=${encodeURIComponent(
-    apiKey,
-  )}`;
+export function styleUrl(sourceId: string): string {
+  return `/api/styles/${encodeURIComponent(sourceId)}.json`;
 }
 
 export function tileUrl(
   source: SanitizedSource,
   tile: { z: number; x: number; y: number },
-  apiKey: string,
 ): string {
   return `/tiles/${encodeURIComponent(source.id)}/${tile.z}/${tile.x}/${tile.y}.${
     source.ext
-  }?key=${encodeURIComponent(apiKey)}`;
+  }`;
 }
 
 export function tileForView(view: ViewState): { z: number; x: number; y: number } {
@@ -101,9 +96,12 @@ export function redactUrl(input: string): string {
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
-export async function testTileUrl(url: string): Promise<TileTestResult> {
+export async function testTileUrl(
+  url: string,
+  apiKey: string,
+): Promise<TileTestResult> {
   const start = performance.now();
-  const response = await fetch(url);
+  const response = await fetch(url, { headers: authHeaders(apiKey) });
   const buffer = await response.arrayBuffer();
 
   return {

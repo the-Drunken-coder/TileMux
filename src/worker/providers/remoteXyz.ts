@@ -15,6 +15,14 @@ export function resolveRemoteTileUrl(
   coordinate: TileCoordinate,
   env: RuntimeEnv,
 ): string {
+  return resolveRemoteTileUrlWithSecrets(source, coordinate, env).url;
+}
+
+function resolveRemoteTileUrlWithSecrets(
+  source: RemoteXyzSource,
+  coordinate: TileCoordinate,
+  env: RuntimeEnv,
+): { url: string; sensitiveValues: string[] } {
   const values: Record<string, string | number> = {
     z: coordinate.z,
     x: coordinate.x,
@@ -27,6 +35,7 @@ export function resolveRemoteTileUrl(
     STADIA_KEY: env.STADIA_KEY,
     CUSTOM_PROVIDER_KEY: env.CUSTOM_PROVIDER_KEY,
   };
+  const sensitiveValues: string[] = [];
 
   for (const [placeholder, secretName] of Object.entries(
     source.secretPlaceholders || {},
@@ -39,9 +48,10 @@ export function resolveRemoteTileUrl(
       );
     }
     values[placeholder] = secret;
+    sensitiveValues.push(secret);
   }
 
-  return substituteTemplate(source.template, values);
+  return { url: substituteTemplate(source.template, values), sensitiveValues };
 }
 
 function safeUpstreamHeaders(request: Request): Headers {
@@ -63,7 +73,11 @@ export async function remoteXyzResponse(
   source: RemoteXyzSource,
   coordinate: TileCoordinate,
 ): Promise<Response> {
-  const upstreamUrl = resolveRemoteTileUrl(source, coordinate, env);
+  const { url: upstreamUrl, sensitiveValues } = resolveRemoteTileUrlWithSecrets(
+    source,
+    coordinate,
+    env,
+  );
   let upstream: Response;
 
   try {
@@ -77,15 +91,9 @@ export async function remoteXyzResponse(
   } catch {
     throw new HttpError(
       502,
-      `Upstream provider failure for ${source.id}: ${redactUrl(upstreamUrl)}`,
-    );
-  }
-
-  if (!upstream.ok && upstream.status !== 304) {
-    throw new HttpError(
-      502,
-      `Upstream provider returned ${upstream.status} for ${source.id}: ${redactUrl(
+      `Upstream provider failure for ${source.id}: ${redactUrl(
         upstreamUrl,
+        sensitiveValues,
       )}`,
     );
   }

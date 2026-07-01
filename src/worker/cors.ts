@@ -1,6 +1,6 @@
 import type { RuntimeEnv } from "./env";
 
-const DEFAULT_ALLOWED_ORIGINS = "*";
+const DEFAULT_ALLOWED_ORIGINS = "self";
 const ALLOWED_METHODS = "GET, HEAD, OPTIONS";
 const ALLOWED_HEADERS = "Authorization, Content-Type";
 const EXPOSED_HEADERS =
@@ -22,15 +22,19 @@ export function corsHeaders(request: Request, env: RuntimeEnv): Headers {
     .split(",")
     .map((value) => value.trim())
     .filter(Boolean);
+  const requestOrigin = new URL(request.url).origin;
 
   const allowOrigin =
     allowedOrigins.includes("*") || !origin
       ? "*"
-      : allowedOrigins.includes(origin)
+      : allowedOrigins.includes(origin) ||
+          (allowedOrigins.includes("self") && origin === requestOrigin)
         ? origin
-        : "null";
+        : null;
 
-  headers.set("Access-Control-Allow-Origin", allowOrigin);
+  if (allowOrigin) {
+    headers.set("Access-Control-Allow-Origin", allowOrigin);
+  }
   headers.set("Access-Control-Allow-Methods", ALLOWED_METHODS);
   headers.set("Access-Control-Allow-Headers", ALLOWED_HEADERS);
   headers.set("Access-Control-Expose-Headers", EXPOSED_HEADERS);
@@ -45,7 +49,13 @@ export function withCors(
 ): Response {
   const headers = new Headers(response.headers);
   for (const [key, value] of corsHeaders(request, env)) {
-    headers.set(key, value);
+    if (key.toLowerCase() === "vary" && headers.has("Vary")) {
+      const vary = headers.get("Vary") || "";
+      const values = vary.split(",").map((item) => item.trim().toLowerCase());
+      headers.set("Vary", values.includes(value.toLowerCase()) ? vary : `${vary}, ${value}`);
+    } else {
+      headers.set(key, value);
+    }
   }
 
   return new Response(response.body, {

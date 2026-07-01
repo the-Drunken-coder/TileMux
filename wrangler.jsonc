@@ -17,7 +17,7 @@
     }
   ],
   "vars": {
-    "ALLOWED_ORIGINS": "*"
+    "ALLOWED_ORIGINS": "self"
   },
   "observability": {
     "enabled": true,

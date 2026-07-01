@@ -52,11 +52,11 @@ export function DebugPanel({
     return {
       left:
         leftSource && apiKey
-          ? tileUrl(leftSource, tileForView(leftView), apiKey)
+          ? tileUrl(leftSource, tileForView(leftView))
           : "",
       right:
         rightSource && apiKey
-          ? tileUrl(rightSource, tileForView(rightView), apiKey)
+          ? tileUrl(rightSource, tileForView(rightView))
           : "",
     };
   }, [apiKey, leftSource, leftView, rightSource, rightView]);
@@ -68,7 +68,7 @@ export function DebugPanel({
     }
 
     try {
-      const result = await testTileUrl(url);
+      const result = await testTileUrl(url, apiKey);
       setResults((current) => ({ ...current, [side]: result }));
       onError("");
     } catch (error) {

@@ -12,6 +12,10 @@ describe("zxy utilities", () => {
     });
   });
 
+  it("rejects tile paths with malformed percent encoding", () => {
+    expect(parseTilePath("/tiles/%E0%A4/1/0/1.png")).toBeNull();
+  });
+
   it("validates tile bounds and extension", () => {
     expect(
       validateZxy(

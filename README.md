@@ -8,7 +8,7 @@ Important v0 boundary: TileMux currently handles raster-style XYZ providers well
 
 ## What V0 Supports
 
-- `debug-grid` generated SVG raster tiles.
+- `debug-grid` generated SVG/PNG raster tiles.
 - `remote-xyz` tile proxying with server-side provider secret substitution.
 - `r2-xyz` tiles from an R2 bucket through the `TILE_BUCKET` binding.
 - TileJSON and generated MapLibre raster styles.
@@ -35,8 +35,12 @@ Edit `.dev.vars` and set:
 
 ```bash
 TILEMUX_API_KEY=your-local-key
-ALLOWED_ORIGINS=*
+ALLOWED_ORIGINS=self
 ```
+
+`self` allows browser requests from the Worker app's own origin. Use a
+comma-separated origin list for other trusted frontends; reserve `*` for local
+experiments where a wildcard is intentional.
 
 Start local dev:
 
@@ -81,7 +85,7 @@ Edit `src/worker/sources.ts`:
   minzoom: 0,
   maxzoom: 19,
   ext: "png",
-  template: "https://provider.example/tiles/{z}/{x}/{y}.png?token={PROVIDER_TOKEN}",
+  template: "https://provider.example/tiles/{z}/{x}/{y}.{ext}?token={PROVIDER_TOKEN}",
   secretPlaceholders: {
     PROVIDER_TOKEN: "CUSTOM_PROVIDER_KEY",
   },

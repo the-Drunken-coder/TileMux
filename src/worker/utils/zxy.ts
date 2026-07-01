@@ -44,13 +44,17 @@ export function parseTilePath(pathname: string):
     return null;
   }
 
-  return {
-    sourceId: decodeURIComponent(match[1]),
-    zRaw: match[2],
-    xRaw: match[3],
-    yRaw: match[4],
-    ext: match[5].toLowerCase(),
-  };
+  try {
+    return {
+      sourceId: decodeURIComponent(match[1]),
+      zRaw: match[2],
+      xRaw: match[3],
+      yRaw: match[4],
+      ext: match[5].toLowerCase(),
+    };
+  } catch {
+    return null;
+  }
 }
 
 export function validateZxy(

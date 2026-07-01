@@ -28,6 +28,8 @@ export function styleResponseForSource(
         type: "raster",
         tiles: [tileUrlForRequest(request, source, tileExtension)],
         tileSize: source.tileSize,
+        minzoom: source.minzoom,
+        maxzoom: source.maxzoom,
         attribution: source.attribution || "",
       },
     },

@@ -1,5 +1,5 @@
 TILEMUX_API_KEY=replace-me-local-dev-key
-ALLOWED_ORIGINS=*
+ALLOWED_ORIGINS=self
 
 # Optional provider secrets referenced by source config.
 # MAPBOX_TOKEN=replace-me

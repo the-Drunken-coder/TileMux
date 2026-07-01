@@ -4,7 +4,7 @@ TileMux sources are defined in `src/worker/sources.ts`. V0 intentionally uses Ty
 
 ## Supported Kinds
 
-- `debug-grid`: generated SVG tiles for routing and UI testing.
+- `debug-grid`: generated SVG/PNG tiles for routing and UI testing.
 - `remote-xyz`: proxies an upstream XYZ URL template.
 - `r2-xyz`: serves objects from R2 using a key template.
 - `pmtiles-r2`: reserved type for a future PMTiles adapter.
@@ -21,7 +21,7 @@ TileMux sources are defined in `src/worker/sources.ts`. V0 intentionally uses Ty
   minzoom: 0,
   maxzoom: 19,
   ext: "png",
-  template: "https://example.com/tiles/{z}/{x}/{y}.png?token={PROVIDER_TOKEN}",
+  template: "https://example.com/tiles/{z}/{x}/{y}.{ext}?token={PROVIDER_TOKEN}",
   secretPlaceholders: {
     PROVIDER_TOKEN: "CUSTOM_PROVIDER_KEY",
   },

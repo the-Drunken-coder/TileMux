@@ -16,7 +16,15 @@ function sourceIdFromJsonPath(
   kind: "tilejson" | "styles",
 ): string | null {
   const match = new RegExp(`^/(?:api/)?${kind}/([^/]+)\\.json$`).exec(pathname);
-  return match?.[1] ? decodeURIComponent(match[1]) : null;
+  if (!match?.[1]) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return null;
+  }
 }
 
 function requiresAuth(pathname: string): boolean {

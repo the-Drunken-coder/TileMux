@@ -104,15 +104,10 @@ export default function App() {
   }
 
   function toggleSync() {
-    setSyncEnabled((current) => {
-      if (!current) {
-        setViews((viewsBeforeSync) => ({
-          left: viewsBeforeSync.left,
-          right: viewsBeforeSync.left,
-        }));
-      }
-      return !current;
-    });
+    if (!syncEnabled) {
+      setViews((current) => ({ left: current.left, right: current.left }));
+    }
+    setSyncEnabled((current) => !current);
   }
 
   function swapSources() {

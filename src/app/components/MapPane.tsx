@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import maplibregl, { type Map } from "maplibre-gl";
-import { styleUrl, type ViewState } from "../api";
+import { authHeaders, styleUrl, type ViewState } from "../api";
 
 type MapPaneProps = {
   title: string;
@@ -12,6 +12,22 @@ type MapPaneProps = {
 
 function almostEqual(left: number, right: number): boolean {
   return Math.abs(left - right) < 0.000001;
+}
+
+function isTileMuxUrl(input: string): boolean {
+  try {
+    const url = new URL(input, window.location.origin);
+    return (
+      url.origin === window.location.origin &&
+      (url.pathname.startsWith("/api/styles/") ||
+        url.pathname.startsWith("/styles/") ||
+        url.pathname.startsWith("/api/tilejson/") ||
+        url.pathname.startsWith("/tilejson/") ||
+        url.pathname.startsWith("/tiles/"))
+    );
+  } catch {
+    return false;
+  }
 }
 
 export function MapPane({
@@ -37,12 +53,14 @@ export function MapPane({
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: styleUrl(sourceId, apiKey),
+      style: styleUrl(sourceId),
       center: view.center,
       zoom: view.zoom,
       bearing: view.bearing,
       pitch: view.pitch,
       attributionControl: { compact: true },
+      transformRequest: (url) =>
+        isTileMuxUrl(url) ? { url, headers: authHeaders(apiKey) } : { url },
     });
 
     map.addControl(new maplibregl.NavigationControl(), "top-right");

@@ -57,10 +57,28 @@ export function cachePolicyHeader(
   return cachePolicy;
 }
 
-export function redactUrl(input: string): string {
+function redactSensitiveValues(input: string, sensitiveValues: readonly string[]): string {
+  let redacted = input;
+
+  for (const value of sensitiveValues) {
+    if (!value) continue;
+    for (const variant of new Set([value, encodeURIComponent(value)])) {
+      redacted = redacted.split(variant).join(REDACTED_VALUE);
+    }
+  }
+
+  return redacted;
+}
+
+export function redactUrl(
+  input: string,
+  sensitiveValues: readonly string[] = [],
+): string {
   try {
     const isAbsolute = /^[a-z][a-z0-9+.-]*:/i.test(input);
     const url = new URL(input, "https://tilemux.local");
+    if (url.username) url.username = REDACTED_VALUE;
+    if (url.password) url.password = REDACTED_VALUE;
 
     for (const key of Array.from(url.searchParams.keys())) {
       if (SECRET_PARAM_PATTERN.test(key)) {
@@ -68,14 +86,16 @@ export function redactUrl(input: string): string {
       }
     }
 
-    return isAbsolute
+    const output = isAbsolute
       ? url.toString()
       : `${url.pathname}${url.search}${url.hash}`;
+    return redactSensitiveValues(output, sensitiveValues);
   } catch {
-    return input.replace(
+    const output = input.replace(
       /([?&][^=]*(?:key|token|secret|signature|credential|access_token)[^=]*=)[^&\s]+/gi,
       `$1${REDACTED_VALUE}`,
     );
+    return redactSensitiveValues(output, sensitiveValues);
   }
 }
 

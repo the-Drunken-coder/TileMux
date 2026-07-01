@@ -4,7 +4,7 @@ export type ProviderSecretName =
   | "STADIA_KEY"
   | "CUSTOM_PROVIDER_KEY";
 
-export type RuntimeEnv = Env & {
+export type RuntimeEnv = Omit<Env, "ALLOWED_ORIGINS"> & {
   TILEMUX_API_KEY?: string;
   ALLOWED_ORIGINS?: string;
   MAPBOX_TOKEN?: string;

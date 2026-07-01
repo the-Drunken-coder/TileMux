@@ -15,7 +15,7 @@ The Worker uses a small explicit router:
 
 V0 source config lives in TypeScript. This keeps the first version simple and reviewable. The supported kinds are:
 
-- `debug-grid`: generated SVG raster tiles.
+- `debug-grid`: generated SVG/PNG raster tiles.
 - `remote-xyz`: server-side proxy for upstream XYZ templates.
 - `r2-xyz`: object lookup through the `TILE_BUCKET` R2 binding.
 - `pmtiles-r2`: typed placeholder returning `501`.
@@ -40,7 +40,8 @@ V0 is config-file-driven. D1 would add migrations, admin workflows, and source C
 
 ## Future Work
 
-- Replace query-key TileJSON URLs with short-lived signed tile URLs.
+- Add short-lived scoped tokens or signed URLs for clients that cannot send
+  `Authorization` headers.
 - Implement a PMTiles R2 adapter with byte-range reads.
 - Rewrite external style JSON safely without exposing provider secrets.
 - Add glyph and sprite proxying for vector styles.
