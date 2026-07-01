@@ -17,8 +17,19 @@ TileMux returns them.
 ## Bundled Open Sources
 
 - `osm-standard`: OpenStreetMap Standard raster tiles.
+- `cartoRaster`: CARTO Voyager raster tiles.
+- `esri-world-imagery`: Esri World Imagery raster tiles.
+- `usgs-topo`: USGS Topo raster tiles.
 - `openmaps-opentopomap`: OpenTopoMap raster tiles served through openmaps.fr.
 - `openmaps-openhikingmap`: OpenHikingMap raster tiles served through openmaps.fr.
+
+## Bundled Keyed Sources
+
+- Google: `google-maps`, `google-satellite`, `google-hybrid`, `google-terrain`.
+- Azure Maps/Microsoft: `bing-aerial`, `bing-roads`.
+- Mapbox: `mapbox-streets`, `mapbox-satellite`, `mapbox-outdoors`, `mapbox-dark`.
+- Thunderforest: `thunderforest-landscape`, `thunderforest-outdoors`, `thunderforest-transport-dark`, `thunderforest-spinal-map`, `thunderforest-pioneer`.
+- MapTiler: `maptiler-satellite`.
 
 These are enabled by default so the app has real basemaps immediately. Each
 source uses `cachePolicy: "respect-upstream"` so TileMux forwards upstream cache
@@ -46,7 +57,8 @@ keeps provider secrets and non-public templates out of `/sources.json`.
   format: "raster",
   tileSize: 256,
   minzoom: 0,
-  maxzoom: 19,
+  maxzoom: 22,
+  sourceMaxzoom: 19,
   ext: "png",
   attribution: "Example provider",
   cachePolicy: "respect-upstream",
@@ -54,9 +66,17 @@ keeps provider secrets and non-public templates out of `/sources.json`.
 }
 ```
 
-Template placeholders `{z}`, `{x}`, `{y}`, and `{ext}` come from the tile request. Secret placeholders are mapped to Worker env secret names.
+Template placeholders `{z}`, `{x}`, `{y}`, and `{ext}` come from the tile request. Secret placeholders are mapped to Worker env secret names. When `sourceMaxzoom` is lower than `maxzoom`, TileMux accepts the requested zoom but fetches the matching parent tile from upstream.
 
 The bundled `example-remote` source stays disabled by default. To enable it, replace the URL template with a real provider URL, set the provider secret locally or through Wrangler, choose a cache policy, and change `enabled` to `true`.
+
+Migrated TileRelay sources use these Worker secret names:
+
+- `GOOGLE_MAPS_KEY`
+- `AZURE_MAPS_KEY`
+- `MAPBOX_TOKEN`
+- `THUNDERFOREST_KEY`
+- `MAPTILER_KEY`
 
 ## R2 XYZ Example
 

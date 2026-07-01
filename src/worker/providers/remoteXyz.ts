@@ -23,16 +23,22 @@ function resolveRemoteTileUrlWithSecrets(
   coordinate: TileCoordinate,
   env: RuntimeEnv,
 ): { url: string; sensitiveValues: string[] } {
+  const upstreamCoordinate = source.sourceMaxzoom
+    ? sourceTileCoordinate(coordinate, source.sourceMaxzoom)
+    : coordinate;
   const values: Record<string, string | number> = {
-    z: coordinate.z,
-    x: coordinate.x,
-    y: coordinate.y,
-    ext: coordinate.ext,
+    z: upstreamCoordinate.z,
+    x: upstreamCoordinate.x,
+    y: upstreamCoordinate.y,
+    ext: upstreamCoordinate.ext,
   };
   const providerSecrets: Record<ProviderSecretName, string | undefined> = {
+    AZURE_MAPS_KEY: env.AZURE_MAPS_KEY,
+    GOOGLE_MAPS_KEY: env.GOOGLE_MAPS_KEY,
     MAPBOX_TOKEN: env.MAPBOX_TOKEN,
     MAPTILER_KEY: env.MAPTILER_KEY,
     STADIA_KEY: env.STADIA_KEY,
+    THUNDERFOREST_KEY: env.THUNDERFOREST_KEY,
     CUSTOM_PROVIDER_KEY: env.CUSTOM_PROVIDER_KEY,
   };
   const sensitiveValues: string[] = [];
@@ -54,6 +60,23 @@ function resolveRemoteTileUrlWithSecrets(
   return {
     url: substituteTemplate(source.provider.template, values),
     sensitiveValues,
+  };
+}
+
+function sourceTileCoordinate(
+  coordinate: TileCoordinate,
+  sourceMaxzoom: number,
+): TileCoordinate {
+  if (coordinate.z <= sourceMaxzoom) {
+    return coordinate;
+  }
+
+  const factor = 2 ** (coordinate.z - sourceMaxzoom);
+  return {
+    ...coordinate,
+    z: sourceMaxzoom,
+    x: Math.floor(coordinate.x / factor),
+    y: Math.floor(coordinate.y / factor),
   };
 }
 

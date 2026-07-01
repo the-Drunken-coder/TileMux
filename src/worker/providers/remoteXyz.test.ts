@@ -19,6 +19,30 @@ describe("remote XYZ provider", () => {
     ).toBe("https://example.com/tiles/1/0/1.png?token=provider%20secret");
   });
 
+  it("resolves shared provider secrets for keyed TileRelay sources", () => {
+    expect(
+      resolveRemoteTileUrl(
+        SOURCES["google-maps"],
+        { z: 1, x: 0, y: 1, ext: "png" },
+        { GOOGLE_MAPS_KEY: "google secret" } as RuntimeEnv,
+      ),
+    ).toBe(
+      "https://mt0.google.com/vt/lyrs=m&x=0&y=1&z=1&key=google%20secret",
+    );
+  });
+
+  it("uses source max zoom parent coordinates for overzoomed remote tiles", () => {
+    expect(
+      resolveRemoteTileUrl(
+        SOURCES["usgs-topo"],
+        { z: 18, x: 9448, y: 12773, ext: "png" },
+        {} as RuntimeEnv,
+      ),
+    ).toBe(
+      "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/16/3193/2362",
+    );
+  });
+
   it("fails clearly when a required provider secret is missing", () => {
     expect(() =>
       resolveRemoteTileUrl(

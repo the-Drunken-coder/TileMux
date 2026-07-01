@@ -1,15 +1,38 @@
 import { describe, expect, it } from "vitest";
 import { SOURCES, listEnabledSources, sanitizeSource } from "./sources";
 
+const ENABLED_SOURCE_IDS = [
+  "debug-grid",
+  "osm-standard",
+  "cartoRaster",
+  "esri-world-imagery",
+  "google-maps",
+  "google-satellite",
+  "google-hybrid",
+  "google-terrain",
+  "bing-aerial",
+  "bing-roads",
+  "mapbox-streets",
+  "mapbox-satellite",
+  "mapbox-outdoors",
+  "mapbox-dark",
+  "usgs-topo",
+  "thunderforest-landscape",
+  "thunderforest-outdoors",
+  "thunderforest-transport-dark",
+  "thunderforest-spinal-map",
+  "thunderforest-pioneer",
+  "maptiler-satellite",
+  "openmaps-opentopomap",
+  "openmaps-openhikingmap",
+  "local-r2",
+];
+
 describe("sources", () => {
   it("omits disabled sources from enabled list", () => {
-    expect(listEnabledSources().map((source) => source.id)).toEqual([
-      "debug-grid",
-      "osm-standard",
-      "openmaps-opentopomap",
-      "openmaps-openhikingmap",
-      "local-r2",
-    ]);
+    expect(listEnabledSources().map((source) => source.id)).toEqual(
+      ENABLED_SOURCE_IDS,
+    );
   });
 
   it("sanitizes source metadata", () => {
@@ -29,6 +52,19 @@ describe("sources", () => {
     expect(sanitized.browserTileTemplate).toBeUndefined();
   });
 
+  it("keeps provider secret mappings out of sanitized source metadata", () => {
+    const sanitized = sanitizeSource(SOURCES["google-maps"]);
+
+    expect(sanitized).toMatchObject({
+      id: "google-maps",
+      sourceMaxzoom: 20,
+      maxzoom: 22,
+    });
+    expect("provider" in sanitized).toBe(false);
+    expect("secretPlaceholders" in sanitized).toBe(false);
+    expect("template" in sanitized).toBe(false);
+  });
+
   it("exposes explicit browser tile templates for direct browser sources", () => {
     const sanitized = sanitizeSource(SOURCES["openmaps-opentopomap"]);
 
@@ -40,19 +76,12 @@ describe("sources", () => {
   });
 
   it("identifies TileMux to public remote tile providers", () => {
-    for (const sourceId of [
-      "osm-standard",
-      "openmaps-opentopomap",
-      "openmaps-openhikingmap",
-    ] as const) {
-      const source = SOURCES[sourceId];
+    for (const source of listEnabledSources()) {
+      if (source.provider.kind !== "remote-xyz") continue;
 
-      expect(source.provider.kind).toBe("remote-xyz");
-      if (source.provider.kind === "remote-xyz") {
-        expect(source.provider.requestHeaders?.["User-Agent"]).toContain(
-          "TileMux/0.0",
-        );
-      }
+      expect(source.provider.requestHeaders?.["User-Agent"]).toContain(
+        "TileMux/0.0",
+      );
     }
   });
 });

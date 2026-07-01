@@ -10,6 +10,7 @@ Important v0 boundary: TileMux currently handles raster-style XYZ providers well
 
 - `debug-grid` generated SVG/PNG raster tiles.
 - `remote-xyz` tile proxying with server-side provider secret substitution.
+- TileRelay raster sources, including keyed Google, Azure Maps, Mapbox, Thunderforest, and MapTiler sources.
 - `r2-xyz` tiles from an R2 bucket through the `TILE_BUCKET` binding.
 - TileJSON and generated MapLibre raster styles.
 - `/compare` with two synchronized MapLibre maps.
@@ -97,6 +98,7 @@ Edit `src/worker/sources.ts`:
   tileSize: 256,
   minzoom: 0,
   maxzoom: 19,
+  sourceMaxzoom: 19,
   ext: "png",
   attribution: "Provider attribution",
   cachePolicy: "respect-upstream",
@@ -122,6 +124,16 @@ The shipped `example-remote` source is disabled by default so local setup does n
 3. Set that secret in `.dev.vars` locally or with `npx wrangler secret put CUSTOM_PROVIDER_KEY`.
 4. Set `enabled: true`.
 5. Pick `cachePolicy: "respect-upstream"` to keep provider cache headers, or `cachePolicy: "ttl"` plus `cacheTtlSeconds` to force a TileMux TTL.
+
+For migrated TileRelay sources, set these Worker secrets when those providers are enabled:
+
+```bash
+npx wrangler secret put GOOGLE_MAPS_KEY
+npx wrangler secret put AZURE_MAPS_KEY
+npx wrangler secret put MAPBOX_TOKEN
+npx wrangler secret put THUNDERFOREST_KEY
+npx wrangler secret put MAPTILER_KEY
+```
 
 ## Adding An R2 XYZ Source
 

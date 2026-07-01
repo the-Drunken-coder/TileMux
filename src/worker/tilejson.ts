@@ -24,6 +24,7 @@ export function tileUrlForRequest(
 
 export function tileJsonForSource(request: Request, source: TileSource) {
   const ext = source.provider.kind === "debug-grid" ? "png" : source.ext;
+  const sourceMaxzoom = source.sourceMaxzoom ?? source.maxzoom;
 
   return {
     tilejson: "3.0.0",
@@ -31,6 +32,8 @@ export function tileJsonForSource(request: Request, source: TileSource) {
     tiles: [tileUrlForRequest(request, source, ext)],
     minzoom: source.minzoom,
     maxzoom: source.maxzoom,
+    source_maxzoom: sourceMaxzoom,
+    fillzoom: sourceMaxzoom,
     bounds: [-180, -85.051129, 180, 85.051129],
     attribution: source.attribution || "",
   };

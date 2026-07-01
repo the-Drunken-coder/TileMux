@@ -6,6 +6,7 @@ export type SanitizedSource = {
   tileSize: number;
   minzoom: number;
   maxzoom: number;
+  sourceMaxzoom?: number;
   ext: string;
   attribution?: string;
   browserTileTemplate?: string;

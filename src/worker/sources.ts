@@ -45,6 +45,7 @@ export type BaseSource = {
   tileSize: number;
   minzoom: number;
   maxzoom: number;
+  sourceMaxzoom?: number;
   ext: string;
   attribution?: string;
   cachePolicy: CachePolicy;
@@ -85,6 +86,7 @@ export type SanitizedSource = Pick<
   | "tileSize"
   | "minzoom"
   | "maxzoom"
+  | "sourceMaxzoom"
   | "ext"
   | "attribution"
   | "cachePolicy"
@@ -97,6 +99,55 @@ export type SanitizedSource = Pick<
 
 const TILEMUX_USER_AGENT =
   "TileMux/0.0 (+https://github.com/the-Drunken-coder/TileMux)";
+
+const DEFAULT_REMOTE_HEADERS = {
+  "User-Agent": TILEMUX_USER_AGENT,
+};
+
+type RemoteRasterSourceOptions = {
+  id: string;
+  name: string;
+  template: string;
+  maxzoom: number;
+  sourceMaxzoom?: number;
+  ext?: "png" | "jpg";
+  attribution: string;
+  browserTileTemplate?: string;
+  secretPlaceholders?: Record<string, ProviderSecretName>;
+};
+
+function remoteRasterSource({
+  id,
+  name,
+  template,
+  maxzoom,
+  sourceMaxzoom,
+  ext = "png",
+  attribution,
+  browserTileTemplate,
+  secretPlaceholders,
+}: RemoteRasterSourceOptions): RemoteXyzSource {
+  return {
+    id,
+    name,
+    provider: {
+      kind: "remote-xyz",
+      template,
+      browserTileTemplate,
+      secretPlaceholders,
+      requestHeaders: DEFAULT_REMOTE_HEADERS,
+    },
+    format: "raster",
+    tileSize: 256,
+    minzoom: 0,
+    sourceMaxzoom,
+    maxzoom,
+    ext,
+    attribution,
+    cachePolicy: "respect-upstream",
+    enabled: true,
+  };
+}
 
 export const SOURCES = {
   "debug-grid": {
@@ -113,68 +164,253 @@ export const SOURCES = {
     cacheTtlSeconds: 31536000,
     enabled: true,
   },
-  "osm-standard": {
+  "osm-standard": remoteRasterSource({
     id: "osm-standard",
     name: "OpenStreetMap Standard",
-    provider: {
-      kind: "remote-xyz",
-      template: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-      requestHeaders: {
-        "User-Agent": TILEMUX_USER_AGENT,
-      },
-    },
-    format: "raster",
-    tileSize: 256,
-    minzoom: 0,
-    maxzoom: 19,
-    ext: "png",
+    template: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    sourceMaxzoom: 19,
+    maxzoom: 22,
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
-    cachePolicy: "respect-upstream",
-    enabled: true,
-  },
-  "openmaps-opentopomap": {
+  }),
+  cartoRaster: remoteRasterSource({
+    id: "cartoRaster",
+    name: "CARTO Voyager",
+    template: "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+    sourceMaxzoom: 19,
+    maxzoom: 22,
+    attribution:
+      '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+  }),
+  "esri-world-imagery": remoteRasterSource({
+    id: "esri-world-imagery",
+    name: "Esri World Imagery",
+    template:
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    sourceMaxzoom: 19,
+    maxzoom: 22,
+    attribution: '&copy; <a href="https://www.esri.com/">Esri</a>',
+  }),
+  "google-maps": remoteRasterSource({
+    id: "google-maps",
+    name: "Google Maps",
+    template: "https://mt0.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key={GOOGLE_MAPS_KEY}",
+    sourceMaxzoom: 20,
+    maxzoom: 22,
+    attribution: '&copy; <a href="https://www.google.com/maps">Google</a>',
+    secretPlaceholders: {
+      GOOGLE_MAPS_KEY: "GOOGLE_MAPS_KEY",
+    },
+  }),
+  "google-satellite": remoteRasterSource({
+    id: "google-satellite",
+    name: "Google Satellite",
+    template: "https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}&key={GOOGLE_MAPS_KEY}",
+    sourceMaxzoom: 20,
+    maxzoom: 22,
+    attribution: '&copy; <a href="https://www.google.com/maps">Google</a>',
+    secretPlaceholders: {
+      GOOGLE_MAPS_KEY: "GOOGLE_MAPS_KEY",
+    },
+  }),
+  "google-hybrid": remoteRasterSource({
+    id: "google-hybrid",
+    name: "Google Hybrid",
+    template: "https://mt0.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&key={GOOGLE_MAPS_KEY}",
+    sourceMaxzoom: 20,
+    maxzoom: 22,
+    attribution: '&copy; <a href="https://www.google.com/maps">Google</a>',
+    secretPlaceholders: {
+      GOOGLE_MAPS_KEY: "GOOGLE_MAPS_KEY",
+    },
+  }),
+  "google-terrain": remoteRasterSource({
+    id: "google-terrain",
+    name: "Google Terrain",
+    template: "https://mt0.google.com/vt/lyrs=t&x={x}&y={y}&z={z}&key={GOOGLE_MAPS_KEY}",
+    sourceMaxzoom: 20,
+    maxzoom: 22,
+    attribution: '&copy; <a href="https://www.google.com/maps">Google</a>',
+    secretPlaceholders: {
+      GOOGLE_MAPS_KEY: "GOOGLE_MAPS_KEY",
+    },
+  }),
+  "bing-aerial": remoteRasterSource({
+    id: "bing-aerial",
+    name: "Microsoft Imagery",
+    template:
+      "https://atlas.microsoft.com/map/tile?api-version=2.1&tilesetId=microsoft.imagery&zoom={z}&x={x}&y={y}&tileSize=256&subscription-key={AZURE_MAPS_KEY}",
+    sourceMaxzoom: 19,
+    maxzoom: 22,
+    attribution: '&copy; <a href="https://azure.microsoft.com/products/azure-maps">Microsoft</a>',
+    secretPlaceholders: {
+      AZURE_MAPS_KEY: "AZURE_MAPS_KEY",
+    },
+  }),
+  "bing-roads": remoteRasterSource({
+    id: "bing-roads",
+    name: "Microsoft Roads",
+    template:
+      "https://atlas.microsoft.com/map/tile?api-version=2.1&tilesetId=microsoft.base.road&zoom={z}&x={x}&y={y}&tileSize=256&subscription-key={AZURE_MAPS_KEY}",
+    sourceMaxzoom: 19,
+    maxzoom: 22,
+    attribution: '&copy; <a href="https://azure.microsoft.com/products/azure-maps">Microsoft</a>',
+    secretPlaceholders: {
+      AZURE_MAPS_KEY: "AZURE_MAPS_KEY",
+    },
+  }),
+  "mapbox-streets": remoteRasterSource({
+    id: "mapbox-streets",
+    name: "Mapbox Streets",
+    template:
+      "https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token={MAPBOX_TOKEN}",
+    maxzoom: 22,
+    attribution:
+      '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    secretPlaceholders: {
+      MAPBOX_TOKEN: "MAPBOX_TOKEN",
+    },
+  }),
+  "mapbox-satellite": remoteRasterSource({
+    id: "mapbox-satellite",
+    name: "Mapbox Satellite",
+    template:
+      "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token={MAPBOX_TOKEN}",
+    maxzoom: 22,
+    attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; Maxar',
+    secretPlaceholders: {
+      MAPBOX_TOKEN: "MAPBOX_TOKEN",
+    },
+  }),
+  "mapbox-outdoors": remoteRasterSource({
+    id: "mapbox-outdoors",
+    name: "Mapbox Outdoors",
+    template:
+      "https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/{z}/{x}/{y}?access_token={MAPBOX_TOKEN}",
+    maxzoom: 22,
+    attribution:
+      '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    secretPlaceholders: {
+      MAPBOX_TOKEN: "MAPBOX_TOKEN",
+    },
+  }),
+  "mapbox-dark": remoteRasterSource({
+    id: "mapbox-dark",
+    name: "Mapbox Dark",
+    template:
+      "https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}?access_token={MAPBOX_TOKEN}",
+    maxzoom: 22,
+    attribution:
+      '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    secretPlaceholders: {
+      MAPBOX_TOKEN: "MAPBOX_TOKEN",
+    },
+  }),
+  "usgs-topo": remoteRasterSource({
+    id: "usgs-topo",
+    name: "USGS Topo",
+    template:
+      "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}",
+    sourceMaxzoom: 16,
+    maxzoom: 22,
+    attribution: "Tiles courtesy of the U.S. Geological Survey",
+  }),
+  "thunderforest-landscape": remoteRasterSource({
+    id: "thunderforest-landscape",
+    name: "Thunderforest Landscape",
+    template:
+      "https://tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey={THUNDERFOREST_KEY}",
+    sourceMaxzoom: 19,
+    maxzoom: 22,
+    attribution:
+      '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+    secretPlaceholders: {
+      THUNDERFOREST_KEY: "THUNDERFOREST_KEY",
+    },
+  }),
+  "thunderforest-outdoors": remoteRasterSource({
+    id: "thunderforest-outdoors",
+    name: "Thunderforest Outdoors",
+    template:
+      "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey={THUNDERFOREST_KEY}",
+    sourceMaxzoom: 19,
+    maxzoom: 22,
+    attribution:
+      '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+    secretPlaceholders: {
+      THUNDERFOREST_KEY: "THUNDERFOREST_KEY",
+    },
+  }),
+  "thunderforest-transport-dark": remoteRasterSource({
+    id: "thunderforest-transport-dark",
+    name: "Thunderforest Transport Dark",
+    template:
+      "https://tile.thunderforest.com/transport-dark/{z}/{x}/{y}.png?apikey={THUNDERFOREST_KEY}",
+    sourceMaxzoom: 19,
+    maxzoom: 22,
+    attribution:
+      '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+    secretPlaceholders: {
+      THUNDERFOREST_KEY: "THUNDERFOREST_KEY",
+    },
+  }),
+  "thunderforest-spinal-map": remoteRasterSource({
+    id: "thunderforest-spinal-map",
+    name: "Thunderforest Spinal Map",
+    template:
+      "https://tile.thunderforest.com/spinal-map/{z}/{x}/{y}.png?apikey={THUNDERFOREST_KEY}",
+    sourceMaxzoom: 19,
+    maxzoom: 22,
+    attribution:
+      '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+    secretPlaceholders: {
+      THUNDERFOREST_KEY: "THUNDERFOREST_KEY",
+    },
+  }),
+  "thunderforest-pioneer": remoteRasterSource({
+    id: "thunderforest-pioneer",
+    name: "Thunderforest Pioneer",
+    template:
+      "https://tile.thunderforest.com/pioneer/{z}/{x}/{y}.png?apikey={THUNDERFOREST_KEY}",
+    sourceMaxzoom: 19,
+    maxzoom: 22,
+    attribution:
+      '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+    secretPlaceholders: {
+      THUNDERFOREST_KEY: "THUNDERFOREST_KEY",
+    },
+  }),
+  "maptiler-satellite": remoteRasterSource({
+    id: "maptiler-satellite",
+    name: "MapTiler Satellite",
+    template: "https://api.maptiler.com/maps/satellite/256/{z}/{x}/{y}.jpg?key={MAPTILER_KEY}",
+    sourceMaxzoom: 19,
+    maxzoom: 22,
+    ext: "jpg",
+    attribution:
+      '&copy; <a href="https://www.maptiler.com/">MapTiler</a> &copy; Maxar &copy; Sentinel-2',
+    secretPlaceholders: {
+      MAPTILER_KEY: "MAPTILER_KEY",
+    },
+  }),
+  "openmaps-opentopomap": remoteRasterSource({
     id: "openmaps-opentopomap",
     name: "OpenTopoMap",
-    provider: {
-      kind: "remote-xyz",
-      template: "https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png",
-      browserTileTemplate: "https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png",
-      requestHeaders: {
-        "User-Agent": TILEMUX_USER_AGENT,
-      },
-    },
-    format: "raster",
-    tileSize: 256,
-    minzoom: 0,
+    template: "https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png",
+    browserTileTemplate: "https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png",
     maxzoom: 17,
-    ext: "png",
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, <a href="https://opentopomap.org/about">OpenTopoMap</a>, <a href="https://openmaps.fr/">openmaps.fr</a>',
-    cachePolicy: "respect-upstream",
-    enabled: true,
-  },
-  "openmaps-openhikingmap": {
+  }),
+  "openmaps-openhikingmap": remoteRasterSource({
     id: "openmaps-openhikingmap",
     name: "OpenHikingMap",
-    provider: {
-      kind: "remote-xyz",
-      template: "https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png",
-      browserTileTemplate: "https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png",
-      requestHeaders: {
-        "User-Agent": TILEMUX_USER_AGENT,
-      },
-    },
-    format: "raster",
-    tileSize: 256,
-    minzoom: 0,
+    template: "https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png",
+    browserTileTemplate: "https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png",
     maxzoom: 17,
-    ext: "png",
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, OpenHikingMap, <a href="https://openmaps.fr/">openmaps.fr</a>',
-    cachePolicy: "respect-upstream",
-    enabled: true,
-  },
+  }),
   "example-remote": {
     id: "example-remote",
     name: "Example Remote XYZ",
@@ -256,6 +492,7 @@ export function sanitizeSource(source: TileSource): SanitizedSource {
     tileSize: source.tileSize,
     minzoom: source.minzoom,
     maxzoom: source.maxzoom,
+    sourceMaxzoom: source.sourceMaxzoom,
     ext: source.ext,
     attribution: source.attribution,
     cachePolicy: source.cachePolicy,

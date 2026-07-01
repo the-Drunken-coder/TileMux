@@ -3,6 +3,32 @@ import { handleRequest } from "./index";
 import type { RuntimeEnv } from "./env";
 
 const TEST_KEY = "test-tilemux-key";
+const EXPECTED_PUBLIC_SOURCE_IDS = [
+  "debug-grid",
+  "osm-standard",
+  "cartoRaster",
+  "esri-world-imagery",
+  "google-maps",
+  "google-satellite",
+  "google-hybrid",
+  "google-terrain",
+  "bing-aerial",
+  "bing-roads",
+  "mapbox-streets",
+  "mapbox-satellite",
+  "mapbox-outdoors",
+  "mapbox-dark",
+  "usgs-topo",
+  "thunderforest-landscape",
+  "thunderforest-outdoors",
+  "thunderforest-transport-dark",
+  "thunderforest-spinal-map",
+  "thunderforest-pioneer",
+  "maptiler-satellite",
+  "openmaps-opentopomap",
+  "openmaps-openhikingmap",
+  "local-r2",
+];
 
 function unreachable(message: string): never {
   throw new Error(message);
@@ -84,13 +110,9 @@ describe("Worker routes", () => {
     };
 
     expect(response.status).toBe(200);
-    expect(payload.sources.map((source) => source.id)).toEqual([
-      "debug-grid",
-      "osm-standard",
-      "openmaps-opentopomap",
-      "openmaps-openhikingmap",
-      "local-r2",
-    ]);
+    expect(payload.sources.map((source) => source.id)).toEqual(
+      EXPECTED_PUBLIC_SOURCE_IDS,
+    );
     expect(payload.sources[0]).toMatchObject({
       id: "debug-grid",
       cachePolicy: "ttl",
@@ -110,13 +132,9 @@ describe("Worker routes", () => {
     };
 
     expect(response.status).toBe(200);
-    expect(payload.sources.map((source) => source.id)).toEqual([
-      "debug-grid",
-      "osm-standard",
-      "openmaps-opentopomap",
-      "openmaps-openhikingmap",
-      "local-r2",
-    ]);
+    expect(payload.sources.map((source) => source.id)).toEqual(
+      EXPECTED_PUBLIC_SOURCE_IDS,
+    );
   });
 
   it("returns a generated MapLibre style for debug-grid", async () => {
@@ -190,6 +208,31 @@ describe("Worker routes", () => {
     expect(tileJson.tiles[0]).toBe(
       "https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png",
     );
+  });
+
+  it("keeps keyed provider browser styles routed through TileMux", async () => {
+    const styleResponse = await fetchPath("/styles/google-maps.json");
+    const tileJsonResponse = await fetchPath("/tilejson/google-maps.json");
+    const style = (await styleResponse.json()) as {
+      sources: Record<string, { tiles: string[]; maxzoom: number }>;
+    };
+    const tileJson = (await tileJsonResponse.json()) as {
+      tiles: string[];
+      maxzoom: number;
+      source_maxzoom: number;
+    };
+
+    expect(styleResponse.status).toBe(200);
+    expect(tileJsonResponse.status).toBe(200);
+    expect(style.sources["google-maps"].tiles[0]).toBe(
+      "https://tilemux.test/tiles/google-maps/{z}/{x}/{y}.png",
+    );
+    expect(style.sources["google-maps"].maxzoom).toBe(22);
+    expect(tileJson.tiles[0]).toBe(
+      "https://tilemux.test/tiles/google-maps/{z}/{x}/{y}.png",
+    );
+    expect(tileJson.maxzoom).toBe(22);
+    expect(tileJson.source_maxzoom).toBe(20);
   });
 
   it("keeps API style and TileJSON routes private", async () => {
