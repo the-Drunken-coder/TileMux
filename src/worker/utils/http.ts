@@ -1,6 +1,8 @@
 const REDACTED_VALUE = "REDACTED";
 const SECRET_PARAM_PATTERN = /(key|token|secret|signature|credential|access_token)/i;
 
+export type CachePolicy = "none" | "respect-upstream" | "ttl";
+
 export class HttpError extends Error {
   readonly status: number;
 
@@ -28,12 +30,31 @@ export function errorResponse(status: number, message: string): Response {
   return jsonResponse({ error: message }, { status });
 }
 
-export function cacheControlHeader(ttlSeconds?: number): string {
-  if (!ttlSeconds || ttlSeconds <= 0) {
-    return "no-store";
+export function cacheControlHeader(
+  cachePolicy: CachePolicy,
+  ttlSeconds?: number,
+  upstreamCacheControl?: string | null,
+): string {
+  if (cachePolicy === "respect-upstream" && upstreamCacheControl) {
+    return upstreamCacheControl;
   }
 
-  return `public, max-age=${Math.floor(ttlSeconds)}`;
+  if (cachePolicy === "ttl" && ttlSeconds && ttlSeconds > 0) {
+    return `public, max-age=${Math.floor(ttlSeconds)}`;
+  }
+
+  return "no-store";
+}
+
+export function cachePolicyHeader(
+  cachePolicy: CachePolicy,
+  ttlSeconds?: number,
+): string {
+  if (cachePolicy === "ttl" && ttlSeconds && ttlSeconds > 0) {
+    return `ttl=${Math.floor(ttlSeconds)}`;
+  }
+
+  return cachePolicy;
 }
 
 export function redactUrl(input: string): string {

@@ -30,7 +30,7 @@ Provider secrets are separate environment secrets referenced by source placehold
 
 ## Caching Model
 
-Each source can define `cacheTtlSeconds`. Tile responses set `Cache-Control`, `X-TileMux-Source`, and `X-TileMux-Cache-Policy`. Remote XYZ requests also pass Cloudflare fetch cache hints when a TTL is configured.
+Each source defines `cachePolicy` as `none`, `respect-upstream`, or `ttl`. Tile responses set `Cache-Control`, `X-TileMux-Source`, and `X-TileMux-Cache-Policy`. Remote XYZ requests pass Cloudflare fetch cache hints only for `ttl` sources.
 
 The debug-grid source uses a long TTL because its output is deterministic.
 

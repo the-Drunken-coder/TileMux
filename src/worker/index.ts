@@ -85,28 +85,31 @@ async function routeRequest(
   return env.ASSETS.fetch(request);
 }
 
+export async function handleRequest(
+  request: Request,
+  env: RuntimeEnv,
+): Promise<Response> {
+  const url = new URL(request.url);
+
+  if (request.method === "OPTIONS" && isTileMuxRoute(url.pathname)) {
+    return preflightResponse(request, env);
+  }
+
+  try {
+    const response = await routeRequest(request, env);
+    return isTileMuxRoute(url.pathname) ? withCors(request, env, response) : response;
+  } catch (error) {
+    const response =
+      error instanceof HttpError
+        ? errorResponse(error.status, error.message)
+        : errorResponse(500, `Unexpected error for ${redactUrl(request.url)}`);
+
+    return isTileMuxRoute(url.pathname) ? withCors(request, env, response) : response;
+  }
+}
+
 export default {
   async fetch(request, env): Promise<Response> {
-    const url = new URL(request.url);
-
-    if (request.method === "OPTIONS" && isTileMuxRoute(url.pathname)) {
-      return preflightResponse(request, env);
-    }
-
-    try {
-      const response = await routeRequest(request, env);
-      return isTileMuxRoute(url.pathname)
-        ? withCors(request, env, response)
-        : response;
-    } catch (error) {
-      const response =
-        error instanceof HttpError
-          ? errorResponse(error.status, error.message)
-          : errorResponse(500, `Unexpected error for ${redactUrl(request.url)}`);
-
-      return isTileMuxRoute(url.pathname)
-        ? withCors(request, env, response)
-        : response;
-    }
+    return handleRequest(request, env);
   },
 } satisfies ExportedHandler<RuntimeEnv>;

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { redactUrl, substituteTemplate } from "./http";
+import {
+  cacheControlHeader,
+  cachePolicyHeader,
+  redactUrl,
+  substituteTemplate,
+} from "./http";
 
 describe("http utilities", () => {
   it("substitutes URL templates", () => {
@@ -21,5 +26,15 @@ describe("http utilities", () => {
     expect(redactUrl("/tiles/1/2/3.png?token=secret")).toBe(
       "/tiles/1/2/3.png?token=REDACTED",
     );
+  });
+
+  it("builds cache headers from source policy", () => {
+    expect(cacheControlHeader("none", 60)).toBe("no-store");
+    expect(cacheControlHeader("ttl", 60)).toBe("public, max-age=60");
+    expect(cachePolicyHeader("ttl", 60)).toBe("ttl=60");
+    expect(cacheControlHeader("respect-upstream", undefined, "max-age=30")).toBe(
+      "max-age=30",
+    );
+    expect(cacheControlHeader("respect-upstream")).toBe("no-store");
   });
 });

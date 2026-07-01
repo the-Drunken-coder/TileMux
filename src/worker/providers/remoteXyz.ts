@@ -4,6 +4,7 @@ import type { TileCoordinate } from "../utils/zxy";
 import { contentTypeForExtension } from "../utils/contentTypes";
 import {
   cacheControlHeader,
+  cachePolicyHeader,
   HttpError,
   redactUrl,
   substituteTemplate,
@@ -69,7 +70,7 @@ export async function remoteXyzResponse(
     upstream = await fetch(upstreamUrl, {
       method: request.method === "HEAD" ? "HEAD" : "GET",
       headers: safeUpstreamHeaders(request),
-      cf: source.cacheTtlSeconds
+      cf: source.cachePolicy === "ttl" && source.cacheTtlSeconds
         ? { cacheEverything: true, cacheTtl: source.cacheTtlSeconds }
         : undefined,
     });
@@ -92,11 +93,16 @@ export async function remoteXyzResponse(
   const headers = new Headers({
     "Content-Type":
       upstream.headers.get("Content-Type") || contentTypeForExtension(source.ext),
-    "Cache-Control": cacheControlHeader(source.cacheTtlSeconds),
+    "Cache-Control": cacheControlHeader(
+      source.cachePolicy,
+      source.cacheTtlSeconds,
+      upstream.headers.get("Cache-Control"),
+    ),
     "X-TileMux-Source": source.id,
-    "X-TileMux-Cache-Policy": source.cacheTtlSeconds
-      ? `ttl=${source.cacheTtlSeconds}`
-      : "no-store",
+    "X-TileMux-Cache-Policy": cachePolicyHeader(
+      source.cachePolicy,
+      source.cacheTtlSeconds,
+    ),
   });
   const etag = upstream.headers.get("ETag");
   const lastModified = upstream.headers.get("Last-Modified");

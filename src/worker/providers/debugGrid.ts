@@ -1,6 +1,6 @@
 import type { DebugGridSource } from "../sources";
 import type { TileCoordinate } from "../utils/zxy";
-import { cacheControlHeader } from "../utils/http";
+import { cacheControlHeader, cachePolicyHeader } from "../utils/http";
 
 function escapeXml(value: string): string {
   return value.replace(/[<>&"']/g, (char) => {
@@ -43,11 +43,15 @@ export function debugGridResponse(
 ): Response {
   const headers = new Headers({
     "Content-Type": "image/svg+xml; charset=utf-8",
-    "Cache-Control": cacheControlHeader(source.cacheTtlSeconds),
+    "Cache-Control": cacheControlHeader(
+      source.cachePolicy,
+      source.cacheTtlSeconds,
+    ),
     "X-TileMux-Source": source.id,
-    "X-TileMux-Cache-Policy": source.cacheTtlSeconds
-      ? `ttl=${source.cacheTtlSeconds}`
-      : "no-store",
+    "X-TileMux-Cache-Policy": cachePolicyHeader(
+      source.cachePolicy,
+      source.cacheTtlSeconds,
+    ),
   });
 
   return new Response(
