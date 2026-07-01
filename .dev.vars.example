@@ -1,0 +1,8 @@
+TILEMUX_API_KEY=replace-me-local-dev-key
+ALLOWED_ORIGINS=*
+
+# Optional provider secrets referenced by source config.
+# MAPBOX_TOKEN=replace-me
+# MAPTILER_KEY=replace-me
+# STADIA_KEY=replace-me
+# CUSTOM_PROVIDER_KEY=replace-me
