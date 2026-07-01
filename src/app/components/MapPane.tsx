@@ -1,11 +1,15 @@
 import { useEffect, useRef } from "react";
-import maplibregl, { type Map } from "maplibre-gl";
+import maplibregl, { type LngLatBoundsLike, type Map } from "maplibre-gl";
 import { styleUrl, type ViewState } from "../api";
+
+type SourceBounds = [number, number, number, number];
 
 type MapPaneProps = {
   title: string;
   sourceId: string;
+  minZoom: number;
   maxZoom: number;
+  bounds?: SourceBounds;
   view: ViewState;
   onViewChange: (view: ViewState) => void;
 };
@@ -14,10 +18,23 @@ function almostEqual(left: number, right: number): boolean {
   return Math.abs(left - right) < 0.000001;
 }
 
+function mapLibreBounds(bounds?: SourceBounds): LngLatBoundsLike | null {
+  if (!bounds) {
+    return null;
+  }
+
+  return [
+    [bounds[0], bounds[1]],
+    [bounds[2], bounds[3]],
+  ];
+}
+
 export function MapPane({
   title,
   sourceId,
+  minZoom,
   maxZoom,
+  bounds,
   view,
   onViewChange,
 }: MapPaneProps) {
@@ -39,8 +56,10 @@ export function MapPane({
       container: containerRef.current,
       style: styleUrl(sourceId),
       center: view.center,
-      zoom: Math.min(view.zoom, maxZoom),
+      zoom: Math.max(minZoom, Math.min(view.zoom, maxZoom)),
+      minZoom,
       maxZoom,
+      maxBounds: mapLibreBounds(bounds) ?? undefined,
       bearing: view.bearing,
       pitch: view.pitch,
       attributionControl: { compact: true },
@@ -79,17 +98,20 @@ export function MapPane({
       return;
     }
 
+    map.setMinZoom(minZoom);
     map.setMaxZoom(maxZoom);
-    if (map.getZoom() <= maxZoom) {
+    map.setMaxBounds(mapLibreBounds(bounds));
+    const zoom = Math.max(minZoom, Math.min(maxZoom, map.getZoom()));
+    if (zoom === map.getZoom()) {
       return;
     }
 
     applyingViewRef.current = true;
-    map.jumpTo({ zoom: maxZoom });
+    map.jumpTo({ zoom });
     requestAnimationFrame(() => {
       applyingViewRef.current = false;
     });
-  }, [maxZoom]);
+  }, [minZoom, maxZoom, bounds]);
 
   useEffect(() => {
     const map = mapRef.current;

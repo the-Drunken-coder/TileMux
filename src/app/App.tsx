@@ -7,7 +7,14 @@ import {
   type SanitizedSource,
   type ViewState,
 } from "./api";
-import { clampViewZoom, comparisonMaxZoom, sourceMaxZoom } from "./zoom";
+import {
+  clampViewZoom,
+  comparisonMaxZoom,
+  comparisonMinZoom,
+  sourceMaxZoom,
+  sourceMinZoom,
+  viewForSelectedSource,
+} from "./zoom";
 
 const initialView: ViewState = {
   center: [0, 0],
@@ -70,24 +77,65 @@ export default function App() {
 
   const leftSource = sourceById.get(leftSourceId);
   const rightSource = sourceById.get(rightSourceId);
+  const syncedMinZoom = comparisonMinZoom(leftSource, rightSource);
   const syncedMaxZoom = comparisonMaxZoom(leftSource, rightSource);
+  const leftMinZoom = syncEnabled ? syncedMinZoom : sourceMinZoom(leftSource);
+  const rightMinZoom = syncEnabled ? syncedMinZoom : sourceMinZoom(rightSource);
   const leftMaxZoom = syncEnabled ? syncedMaxZoom : sourceMaxZoom(leftSource);
   const rightMaxZoom = syncEnabled ? syncedMaxZoom : sourceMaxZoom(rightSource);
+  const syncedBounds = syncEnabled
+    ? focusSourceForSync(undefined, leftSource, rightSource)?.bounds
+    : undefined;
+  const leftBounds = syncEnabled ? syncedBounds : leftSource?.bounds;
+  const rightBounds = syncEnabled ? syncedBounds : rightSource?.bounds;
 
   useEffect(() => {
     setViews((current) => {
-      const left = clampViewZoom(current.left, leftMaxZoom);
-      const right = clampViewZoom(current.right, rightMaxZoom);
+      if (syncEnabled) {
+        const sourceToFocus = focusSourceForSync(undefined, leftSource, rightSource);
+        const view = viewForSelectedSource(
+          sourceToFocus,
+          current.left,
+          leftMinZoom,
+          leftMaxZoom,
+        );
+
+        return view === current.left && view === current.right
+          ? current
+          : { left: view, right: view };
+      }
+
+      const left = viewForSelectedSource(
+        leftSource,
+        current.left,
+        leftMinZoom,
+        leftMaxZoom,
+      );
+      const right = viewForSelectedSource(
+        rightSource,
+        current.right,
+        rightMinZoom,
+        rightMaxZoom,
+      );
 
       return left === current.left && right === current.right
         ? current
         : { left, right };
     });
-  }, [leftMaxZoom, rightMaxZoom]);
+  }, [
+    leftSourceId,
+    rightSourceId,
+    syncEnabled,
+    leftMinZoom,
+    leftMaxZoom,
+    rightMinZoom,
+    rightMaxZoom,
+  ]);
 
   function updateView(side: Side, nextView: ViewState) {
+    const minZoom = side === "left" ? leftMinZoom : rightMinZoom;
     const maxZoom = side === "left" ? leftMaxZoom : rightMaxZoom;
-    const boundedView = clampViewZoom(nextView, maxZoom);
+    const boundedView = clampViewZoom(nextView, minZoom, maxZoom);
 
     setViews((current) => {
       if (syncEnabled) {
@@ -98,10 +146,59 @@ export default function App() {
     });
   }
 
+  function focusSourceForSync(
+    selectedSource: SanitizedSource | undefined,
+    nextLeftSource: SanitizedSource | undefined,
+    nextRightSource: SanitizedSource | undefined,
+  ): SanitizedSource | undefined {
+    return (
+      (selectedSource?.bounds ? selectedSource : undefined) ||
+      (nextLeftSource?.bounds ? nextLeftSource : undefined) ||
+      (nextRightSource?.bounds ? nextRightSource : undefined) ||
+      selectedSource
+    );
+  }
+
+  function changeSource(side: Side, sourceId: string) {
+    const selectedSource = sourceById.get(sourceId);
+    const nextLeftSource = side === "left" ? selectedSource : leftSource;
+    const nextRightSource = side === "right" ? selectedSource : rightSource;
+    const nextMinZoom = syncEnabled
+      ? comparisonMinZoom(nextLeftSource, nextRightSource)
+      : sourceMinZoom(selectedSource);
+    const nextMaxZoom = syncEnabled
+      ? comparisonMaxZoom(nextLeftSource, nextRightSource)
+      : sourceMaxZoom(selectedSource);
+    const sourceToFocus = syncEnabled
+      ? focusSourceForSync(selectedSource, nextLeftSource, nextRightSource)
+      : selectedSource;
+
+    if (side === "left") {
+      setLeftSourceId(sourceId);
+    } else {
+      setRightSourceId(sourceId);
+    }
+
+    setViews((current) => {
+      const nextView = viewForSelectedSource(
+        sourceToFocus,
+        current[side],
+        nextMinZoom,
+        nextMaxZoom,
+      );
+
+      if (syncEnabled) {
+        return { left: nextView, right: nextView };
+      }
+
+      return { ...current, [side]: nextView };
+    });
+  }
+
   function toggleSync() {
     if (!syncEnabled) {
       setViews((current) => {
-        const view = clampViewZoom(current.left, syncedMaxZoom);
+        const view = clampViewZoom(current.left, syncedMinZoom, syncedMaxZoom);
         return { left: view, right: view };
       });
     }
@@ -127,13 +224,13 @@ export default function App() {
           label="Left source"
           sources={sources}
           value={leftSourceId}
-          onChange={setLeftSourceId}
+          onChange={(sourceId) => changeSource("left", sourceId)}
         />
         <SourcePicker
           label="Right source"
           sources={sources}
           value={rightSourceId}
-          onChange={setRightSourceId}
+          onChange={(sourceId) => changeSource("right", sourceId)}
         />
         <button type="button" onClick={swapSources} disabled={!leftSource || !rightSource}>
           Swap
@@ -150,14 +247,18 @@ export default function App() {
         <MapPane
           title="Left"
           sourceId={leftSourceId}
+          minZoom={leftMinZoom}
           maxZoom={leftMaxZoom}
+          bounds={leftBounds}
           view={views.left}
           onViewChange={(view) => updateView("left", view)}
         />
         <MapPane
           title="Right"
           sourceId={rightSourceId}
+          minZoom={rightMinZoom}
           maxZoom={rightMaxZoom}
+          bounds={rightBounds}
           view={views.right}
           onViewChange={(view) => updateView("right", view)}
         />
