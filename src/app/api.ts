@@ -26,24 +26,8 @@ export type TileTestResult = {
   elapsedMs: number;
 };
 
-let inMemoryApiKey = "";
-
-export function storedApiKey(): string {
-  return inMemoryApiKey;
-}
-
-export function storeApiKey(apiKey: string): void {
-  inMemoryApiKey = apiKey;
-}
-
-export function authHeaders(apiKey: string): HeadersInit {
-  return apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
-}
-
-export async function fetchSources(apiKey: string): Promise<SanitizedSource[]> {
-  const response = await fetch("/api/sources", {
-    headers: authHeaders(apiKey),
-  });
+export async function fetchSources(): Promise<SanitizedSource[]> {
+  const response = await fetch("/sources.json");
 
   if (!response.ok) {
     throw new Error(`Source request failed with ${response.status}`);
@@ -54,7 +38,7 @@ export async function fetchSources(apiKey: string): Promise<SanitizedSource[]> {
 }
 
 export function styleUrl(sourceId: string): string {
-  return `/api/styles/${encodeURIComponent(sourceId)}.json`;
+  return `/styles/${encodeURIComponent(sourceId)}.json`;
 }
 
 export function tileUrl(
@@ -98,10 +82,9 @@ export function redactUrl(input: string): string {
 
 export async function testTileUrl(
   url: string,
-  apiKey: string,
 ): Promise<TileTestResult> {
   const start = performance.now();
-  const response = await fetch(url, { headers: authHeaders(apiKey) });
+  const response = await fetch(url);
   const buffer = await response.arrayBuffer();
 
   return {

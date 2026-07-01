@@ -2,14 +2,21 @@
 
 ## Request Flow
 
-Cloudflare Workers static assets serve the Vite React app from `dist`. Wrangler is configured with `run_worker_first` for `/api/*`, `/tiles/*`, `/styles/*`, and `/tilejson/*`, so those paths always hit the Worker before asset fallback.
+Cloudflare Workers static assets serve the Vite React app from `dist`. Wrangler
+is configured with `run_worker_first` for `/api/*`, `/tiles/*`, `/styles/*`,
+`/tilejson/*`, and `/sources.json`, so those paths always hit the Worker before
+asset fallback.
 
 The Worker uses a small explicit router:
 
 1. `/api/health` is public.
-2. Private routes check `TILEMUX_API_KEY` from `Authorization: Bearer <key>` or `?key=<key>`.
-3. Source/style/tile routes resolve an enabled source from `src/worker/sources.ts`.
-4. Tile requests dispatch to a provider adapter by `source.provider.kind`.
+2. `/api/*` routes, except health, check `TILEMUX_API_KEY` from
+   `Authorization: Bearer <key>` or `?key=<key>`.
+3. Browser routes use public `/sources.json`, `/styles/*`, `/tilejson/*`, and
+   `/tiles/*`.
+4. Source/style/tile routes resolve an enabled source from
+   `src/worker/sources.ts`.
+5. Tile requests dispatch to a provider adapter by `source.provider.kind`.
 
 ## Source Registry Model
 
@@ -26,11 +33,14 @@ Remote sources such as OpenStreetMap and OpenTopoMap are ordinary `remote-xyz`
 provider instances, not bespoke adapters. Add a new provider adapter only when
 the retrieval mechanics change.
 
-Disabled sources are not returned by `/api/sources` and behave like unknown sources on public routes.
+Disabled sources are not returned by `/sources.json` or `/api/sources` and
+behave like unknown sources on public routes.
 
 ## Auth Model
 
-TileMux has one private app key, `TILEMUX_API_KEY`. The React shell is public, but metadata, TileJSON, generated styles, and tiles are private.
+TileMux has one private API key, `TILEMUX_API_KEY`. It protects `/api/*`
+routes only. The React shell, browser source catalog, TileJSON, generated
+styles, and tiles are public so the browser version works without a key.
 
 Provider secrets are separate environment secrets referenced by source placeholders. They are resolved only inside the Worker and are not returned to the frontend.
 

@@ -10,7 +10,6 @@ import {
 } from "../api";
 
 type DebugPanelProps = {
-  apiKey: string;
   leftSource?: SanitizedSource;
   rightSource?: SanitizedSource;
   leftView: ViewState;
@@ -40,7 +39,6 @@ function ResultLine({ result }: { result?: TileTestResult }) {
 }
 
 export function DebugPanel({
-  apiKey,
   leftSource,
   rightSource,
   leftView,
@@ -51,15 +49,15 @@ export function DebugPanel({
   const sampleUrls = useMemo(() => {
     return {
       left:
-        leftSource && apiKey
+        leftSource
           ? tileUrl(leftSource, tileForView(leftView))
           : "",
       right:
-        rightSource && apiKey
+        rightSource
           ? tileUrl(rightSource, tileForView(rightView))
           : "",
     };
-  }, [apiKey, leftSource, leftView, rightSource, rightView]);
+  }, [leftSource, leftView, rightSource, rightView]);
 
   async function runTileTest(side: Side) {
     const url = sampleUrls[side];
@@ -68,7 +66,7 @@ export function DebugPanel({
     }
 
     try {
-      const result = await testTileUrl(url, apiKey);
+      const result = await testTileUrl(url);
       setResults((current) => ({ ...current, [side]: result }));
       onError("");
     } catch (error) {

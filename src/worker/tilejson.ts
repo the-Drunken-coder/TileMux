@@ -6,11 +6,7 @@ export function tileUrlForRequest(
   ext = source.ext,
 ): string {
   const url = new URL(request.url);
-  const queryKey = url.searchParams.get("key");
-  const keyParam = queryKey ? `?key=${encodeURIComponent(queryKey)}` : "";
-  return `${url.origin}/tiles/${encodeURIComponent(source.id)}/{z}/{x}/{y}.${
-    ext
-  }${keyParam}`;
+  return `${url.origin}/tiles/${encodeURIComponent(source.id)}/{z}/{x}/{y}.${ext}`;
 }
 
 export function tileJsonForSource(request: Request, source: TileSource) {

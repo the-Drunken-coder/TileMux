@@ -5,8 +5,6 @@ import { SourcePicker } from "./components/SourcePicker";
 import {
   fetchSources,
   type SanitizedSource,
-  storedApiKey,
-  storeApiKey,
   type ViewState,
 } from "./api";
 
@@ -20,8 +18,6 @@ const initialView: ViewState = {
 type Side = "left" | "right";
 
 export default function App() {
-  const [apiKeyInput, setApiKeyInput] = useState(storedApiKey);
-  const [apiKey, setApiKey] = useState(storedApiKey);
   const [sources, setSources] = useState<SanitizedSource[]>([]);
   const [leftSourceId, setLeftSourceId] = useState("");
   const [rightSourceId, setRightSourceId] = useState("");
@@ -36,13 +32,8 @@ export default function App() {
     let cancelled = false;
 
     async function loadSources() {
-      if (!apiKey) {
-        setSources([]);
-        return;
-      }
-
       try {
-        const loaded = await fetchSources(apiKey);
+        const loaded = await fetchSources();
         if (cancelled) return;
         const defaultSource =
           loaded.find((source) => source.id === "debug-grid") || loaded[0];
@@ -70,7 +61,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [apiKey]);
+  }, []);
 
   const sourceById = useMemo(() => {
     return new Map(sources.map((source) => [source.id, source]));
@@ -78,20 +69,6 @@ export default function App() {
 
   const leftSource = sourceById.get(leftSourceId);
   const rightSource = sourceById.get(rightSourceId);
-
-  function submitApiKey(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const nextKey = apiKeyInput.trim();
-    storeApiKey(nextKey);
-    setApiKey(nextKey);
-  }
-
-  function clearApiKey() {
-    setApiKeyInput("");
-    setApiKey("");
-    storeApiKey("");
-    setSources([]);
-  }
 
   function updateView(side: Side, nextView: ViewState) {
     setViews((current) => {
@@ -120,21 +97,8 @@ export default function App() {
       <header className="topbar">
         <div>
           <h1>TileMux</h1>
-          <p>Private tile gateway and comparison tool</p>
+          <p>Tile gateway and comparison tool</p>
         </div>
-        <form className="key-form" onSubmit={submitApiKey}>
-          <input
-            aria-label="TileMux API key"
-            type="password"
-            placeholder="TILEMUX_API_KEY"
-            value={apiKeyInput}
-            onChange={(event) => setApiKeyInput(event.target.value)}
-          />
-          <button type="submit">Load</button>
-          <button type="button" className="secondary" onClick={clearApiKey}>
-            Clear
-          </button>
-        </form>
       </header>
 
       <section className="toolbar" aria-label="Map controls">
@@ -164,14 +128,12 @@ export default function App() {
       <section className="compare-grid">
         <MapPane
           title="Left"
-          apiKey={apiKey}
           sourceId={leftSourceId}
           view={views.left}
           onViewChange={(view) => updateView("left", view)}
         />
         <MapPane
           title="Right"
-          apiKey={apiKey}
           sourceId={rightSourceId}
           view={views.right}
           onViewChange={(view) => updateView("right", view)}
@@ -179,7 +141,6 @@ export default function App() {
       </section>
 
       <DebugPanel
-        apiKey={apiKey}
         leftSource={leftSource}
         rightSource={rightSource}
         leftView={views.left}

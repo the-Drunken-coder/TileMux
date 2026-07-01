@@ -32,7 +32,7 @@ function requiresAuth(pathname: string): boolean {
     return false;
   }
 
-  return isTileMuxRoute(pathname);
+  return pathname.startsWith("/api/");
 }
 
 async function routeRequest(
@@ -56,7 +56,10 @@ async function routeRequest(
     throw new HttpError(401, "Missing or invalid API key");
   }
 
-  if (url.pathname === "/api/sources" && request.method === "GET") {
+  if (
+    (url.pathname === "/api/sources" || url.pathname === "/sources.json") &&
+    request.method === "GET"
+  ) {
     return jsonResponse({
       sources: listEnabledSources().map(sanitizeSource),
     });

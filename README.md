@@ -1,8 +1,8 @@
 # TileMux
 
-TileMux is a private Cloudflare Worker app for map tile hosting, map tile proxying, and tile/style comparison. One Worker serves both the API and the React comparison UI.
+TileMux is a Cloudflare Worker app for map tile hosting, map tile proxying, and tile/style comparison. One Worker serves both a public React comparison UI and a private API.
 
-V0 is intentionally small: a TypeScript source registry, one API key, static Worker assets, R2-backed tiles, remote XYZ proxying, and a debug-grid source that works without external services.
+V0 is intentionally small: a TypeScript source registry, one API key for `/api/*`, static Worker assets, R2-backed tiles, remote XYZ proxying, and a debug-grid source that works without external services.
 
 Important v0 boundary: TileMux currently handles raster-style XYZ providers well. Full vector provider gateway support usually needs style JSON rewriting, glyph proxying, sprite proxying, and vector tile conventions that are intentionally left for later.
 
@@ -38,6 +38,9 @@ TILEMUX_API_KEY=your-local-key
 ALLOWED_ORIGINS=self
 ```
 
+`TILEMUX_API_KEY` is only required for private `/api/*` routes. The browser UI,
+public source catalog, styles, TileJSON, and tiles load without a key.
+
 `self` allows browser requests from the Worker app's own origin. Use a
 comma-separated origin list for other trusted frontends; reserve `*` for local
 experiments where a wildcard is intentional.
@@ -63,13 +66,16 @@ npm run typecheck
 npm run test
 npm run build
 curl http://localhost:8787/api/health
-curl "http://localhost:8787/tiles/debug-grid/0/0/0.svg?key=your-local-key"
+curl http://localhost:8787/sources.json
+curl http://localhost:8787/styles/debug-grid.json
+curl http://localhost:8787/tilejson/debug-grid.json
+curl http://localhost:8787/tiles/debug-grid/0/0/0.svg
 curl "http://localhost:8787/api/sources?key=your-local-key"
 curl "http://localhost:8787/api/tilejson/debug-grid.json?key=your-local-key"
 curl "http://localhost:8787/api/styles/debug-grid.json?key=your-local-key"
 ```
 
-Missing or wrong keys should return `401` for private API and tile routes.
+Missing or wrong keys should return `401` for private `/api/*` routes.
 
 ## Adding A Remote XYZ Source
 
@@ -103,7 +109,7 @@ Set provider secrets with Wrangler:
 npx wrangler secret put CUSTOM_PROVIDER_KEY
 ```
 
-TileMux never forwards `TILEMUX_API_KEY` upstream and never returns provider secrets in `/api/sources`.
+TileMux never forwards `TILEMUX_API_KEY` upstream and never returns provider secrets in `/sources.json` or `/api/sources`.
 
 The shipped `example-remote` source is disabled by default so local setup does not depend on a real provider. To test the remote gateway path:
 

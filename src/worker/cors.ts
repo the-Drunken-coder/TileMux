@@ -8,6 +8,7 @@ const EXPOSED_HEADERS =
 
 export function isTileMuxRoute(pathname: string): boolean {
   return (
+    pathname === "/sources.json" ||
     pathname.startsWith("/api/") ||
     pathname.startsWith("/tiles/") ||
     pathname.startsWith("/styles/") ||

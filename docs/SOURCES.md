@@ -88,7 +88,7 @@ Use `respect-upstream` when provider terms control tile caching. Use `ttl` for p
 
 ## Common Mistakes
 
-- Forgetting to set `TILEMUX_API_KEY` in `.dev.vars` or Wrangler secrets.
+- Forgetting to set `TILEMUX_API_KEY` when using private `/api/*` routes.
 - Enabling a remote source before setting the provider secret it references.
 - Returning provider API keys in source metadata. Do not add secret fields to sanitized API responses.
 - Mismatching the requested extension and source `ext`.

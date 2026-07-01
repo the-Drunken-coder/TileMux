@@ -101,16 +101,11 @@ select {
   color: #a7b0ad;
 }
 
-.key-form,
 .toolbar {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.65rem;
-}
-
-.key-form input {
-  width: min(360px, 48vw);
 }
 
 .toolbar {
@@ -203,10 +198,6 @@ code {
   .topbar {
     align-items: stretch;
     flex-direction: column;
-  }
-
-  .key-form input {
-    width: 100%;
   }
 
   .compare-grid,
