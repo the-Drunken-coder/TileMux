@@ -2,6 +2,9 @@
 
 TileMux is a Cloudflare Worker app for map tile hosting, map tile proxying, and tile/style comparison. One Worker serves both a public React comparison UI and a private API.
 
+This project is for personal use only. It is not intended to be a public tile
+service, commercial product, or shared multi-user platform.
+
 V0 is intentionally small: a TypeScript source registry, one API key for `/api/*`, static Worker assets, R2-backed tiles, remote XYZ proxying, and a debug-grid source that works without external services.
 
 Important v0 boundary: TileMux handles raster-style XYZ providers well. It also
