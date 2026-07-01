@@ -1,5 +1,6 @@
 import type { ProviderSecretName } from "./env";
 import type { CachePolicy } from "./utils/http";
+import openmaptilesDarkMatterStyle from "./vendor/openmaptiles-dark-matter.json";
 
 export type ProviderKind = "debug-grid" | "remote-xyz" | "r2-xyz" | "pmtiles-r2";
 export type SourceKind = ProviderKind;
@@ -116,6 +117,7 @@ type RemoteRasterSourceOptions = {
   attribution: string;
   browserTileTemplate?: string;
   secretPlaceholders?: Record<string, ProviderSecretName>;
+  enabled?: boolean;
 };
 
 function remoteRasterSource({
@@ -128,6 +130,7 @@ function remoteRasterSource({
   attribution,
   browserTileTemplate,
   secretPlaceholders,
+  enabled = true,
 }: RemoteRasterSourceOptions): RemoteXyzSource {
   return {
     id,
@@ -147,7 +150,7 @@ function remoteRasterSource({
     ext,
     attribution,
     cachePolicy: "respect-upstream",
-    enabled: true,
+    enabled,
   };
 }
 
@@ -406,6 +409,58 @@ export const SOURCES = {
     secretPlaceholders: {
       MAPTILER_KEY: "MAPTILER_KEY",
     },
+  }),
+  "openmaptiles-dark-matter": {
+    id: "openmaptiles-dark-matter",
+    name: "OpenMapTiles Dark Matter",
+    provider: {
+      kind: "remote-xyz",
+      template:
+        "https://api.maptiler.com/tiles/v3-openmaptiles/{z}/{x}/{y}.pbf?key={MAPTILER_KEY}",
+      secretPlaceholders: {
+        MAPTILER_KEY: "MAPTILER_KEY",
+      },
+      requestHeaders: DEFAULT_REMOTE_HEADERS,
+    },
+    format: "vector",
+    tileSize: 512,
+    minzoom: 0,
+    maxzoom: 22,
+    sourceMaxzoom: 14,
+    ext: "pbf",
+    attribution:
+      '<a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://stamen.com/">Stamen Design</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+    cachePolicy: "respect-upstream",
+    enabled: true,
+    style: openmaptilesDarkMatterStyle as Record<string, unknown>,
+  },
+  "stadia-alidade-smooth-dark": remoteRasterSource({
+    id: "stadia-alidade-smooth-dark",
+    name: "Stadia Alidade Smooth Dark",
+    template:
+      "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}.png?api_key={STADIA_KEY}",
+    sourceMaxzoom: 20,
+    maxzoom: 22,
+    attribution:
+      '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+    secretPlaceholders: {
+      STADIA_KEY: "STADIA_KEY",
+    },
+    enabled: false,
+  }),
+  "geoapify-dark-matter-dark-grey": remoteRasterSource({
+    id: "geoapify-dark-matter-dark-grey",
+    name: "Geoapify Dark Matter Dark Grey",
+    template:
+      "https://maps.geoapify.com/v1/tile/dark-matter-dark-grey/{z}/{x}/{y}.png?apiKey={GEOAPIFY_KEY}",
+    sourceMaxzoom: 20,
+    maxzoom: 22,
+    attribution:
+      '&copy; <a href="https://www.geoapify.com/">Geoapify</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+    secretPlaceholders: {
+      GEOAPIFY_KEY: "GEOAPIFY_KEY",
+    },
+    enabled: false,
   }),
   "openmaps-opentopomap": remoteRasterSource({
     id: "openmaps-opentopomap",

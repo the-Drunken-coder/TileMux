@@ -24,6 +24,7 @@ const ENABLED_SOURCE_IDS = [
   "thunderforest-pioneer",
   "maptiler-satellite",
   "maptiler-osm-dark",
+  "openmaptiles-dark-matter",
   "openmaps-opentopomap",
   "openmaps-openhikingmap",
   "local-r2",
@@ -79,6 +80,29 @@ describe("sources", () => {
     expect("provider" in sanitized).toBe(false);
     expect("secretPlaceholders" in sanitized).toBe(false);
     expect("template" in sanitized).toBe(false);
+  });
+
+  it("exposes OpenMapTiles Dark Matter as a vector source with a generated style", () => {
+    const sanitized = sanitizeSource(SOURCES["openmaptiles-dark-matter"]);
+
+    expect(sanitized).toMatchObject({
+      id: "openmaptiles-dark-matter",
+      name: "OpenMapTiles Dark Matter",
+      format: "vector",
+      ext: "pbf",
+      sourceMaxzoom: 14,
+      maxzoom: 22,
+      supportsGeneratedStyle: true,
+    });
+    expect("provider" in sanitized).toBe(false);
+    expect("secretPlaceholders" in sanitized).toBe(false);
+  });
+
+  it("keeps newly configured keyed sources disabled until their secrets exist", () => {
+    const enabledIds = listEnabledSources().map((source) => source.id);
+
+    expect(enabledIds).not.toContain("stadia-alidade-smooth-dark");
+    expect(enabledIds).not.toContain("geoapify-dark-matter-dark-grey");
   });
 
   it("exposes explicit browser tile templates for direct browser sources", () => {

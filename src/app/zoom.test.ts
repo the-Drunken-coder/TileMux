@@ -29,6 +29,18 @@ describe("zoom helpers", () => {
     expect(sourceMaxZoom({ ...baseSource, sourceMaxzoom: 19 })).toBe(19);
   });
 
+  it("keeps vector maps zoomable past their tile source max", () => {
+    expect(
+      sourceMaxZoom({
+        ...baseSource,
+        format: "vector",
+        ext: "pbf",
+        sourceMaxzoom: 14,
+        maxzoom: 22,
+      }),
+    ).toBe(22);
+  });
+
   it("uses the source minimum zoom", () => {
     expect(sourceMinZoom({ ...baseSource, minzoom: 12 })).toBe(12);
     expect(sourceMinZoom(undefined)).toBe(0);

@@ -34,6 +34,7 @@ function resolveRemoteTileUrlWithSecrets(
   };
   const providerSecrets: Record<ProviderSecretName, string | undefined> = {
     AZURE_MAPS_KEY: env.AZURE_MAPS_KEY,
+    GEOAPIFY_KEY: env.GEOAPIFY_KEY,
     GOOGLE_MAPS_KEY: env.GOOGLE_MAPS_KEY,
     MAPBOX_TOKEN: env.MAPBOX_TOKEN,
     MAPTILER_KEY: env.MAPTILER_KEY,

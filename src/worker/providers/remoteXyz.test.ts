@@ -31,6 +31,39 @@ describe("remote XYZ provider", () => {
     );
   });
 
+  it("resolves OpenMapTiles vector tiles through the MapTiler secret", () => {
+    expect(
+      resolveRemoteTileUrl(
+        SOURCES["openmaptiles-dark-matter"],
+        { z: 14, x: 4824, y: 6160, ext: "pbf" },
+        { MAPTILER_KEY: "maptiler secret" } as RuntimeEnv,
+      ),
+    ).toBe(
+      "https://api.maptiler.com/tiles/v3-openmaptiles/14/4824/6160.pbf?key=maptiler%20secret",
+    );
+  });
+
+  it("resolves newly configured optional keyed dark raster sources", () => {
+    expect(
+      resolveRemoteTileUrl(
+        SOURCES["stadia-alidade-smooth-dark"],
+        { z: 1, x: 0, y: 1, ext: "png" },
+        { STADIA_KEY: "stadia secret" } as RuntimeEnv,
+      ),
+    ).toBe(
+      "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/1/0/1.png?api_key=stadia%20secret",
+    );
+    expect(
+      resolveRemoteTileUrl(
+        SOURCES["geoapify-dark-matter-dark-grey"],
+        { z: 1, x: 0, y: 1, ext: "png" },
+        { GEOAPIFY_KEY: "geoapify secret" } as RuntimeEnv,
+      ),
+    ).toBe(
+      "https://maps.geoapify.com/v1/tile/dark-matter-dark-grey/1/0/1.png?apiKey=geoapify%20secret",
+    );
+  });
+
   it("uses source max zoom parent coordinates for overzoomed remote tiles", () => {
     expect(
       resolveRemoteTileUrl(

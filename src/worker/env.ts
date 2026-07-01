@@ -1,6 +1,7 @@
 export type ProviderSecretName =
   | "AZURE_MAPS_KEY"
   | "GOOGLE_MAPS_KEY"
+  | "GEOAPIFY_KEY"
   | "MAPBOX_TOKEN"
   | "MAPTILER_KEY"
   | "STADIA_KEY"
@@ -11,6 +12,7 @@ export type RuntimeEnv = Omit<Env, "ALLOWED_ORIGINS"> & {
   TILEMUX_API_KEY?: string;
   ALLOWED_ORIGINS?: string;
   AZURE_MAPS_KEY?: string;
+  GEOAPIFY_KEY?: string;
   GOOGLE_MAPS_KEY?: string;
   MAPBOX_TOKEN?: string;
   MAPTILER_KEY?: string;

@@ -15,8 +15,8 @@ TileMux is deployed as a Cloudflare Worker.
 
 Latest observed deployment from `npx wrangler deployments list`:
 
-- Created: `2026-07-01T19:51:56.122Z`
-- Version ID: `a29c6928-4e57-4c40-8b16-4c2c0237cf82`
+- Created: `2026-07-01T20:05:37.775Z`
+- Version ID: `e0a162f8-1a58-4aae-ad04-56b134c5f772`
 - Source: `Unknown (deployment)`
 - Author: `laraujo123546@gmail.com`
 
@@ -61,6 +61,12 @@ Configured Worker secret names:
 - `THUNDERFOREST_KEY`
 - `MAPTILER_KEY`
 
+Configured but currently disabled optional sources also reference these secret
+names when they are enabled:
+
+- `STADIA_KEY`
+- `GEOAPIFY_KEY`
+
 Do not commit or write secret values into repository files. `TILEMUX_API_KEY`
 protects private `/api/*` routes only. The browser UI, source catalog, styles,
 TileJSON, and public tile routes are intended to work without that API key.
@@ -88,6 +94,8 @@ npx wrangler secret put AZURE_MAPS_KEY
 npx wrangler secret put MAPBOX_TOKEN
 npx wrangler secret put THUNDERFOREST_KEY
 npx wrangler secret put MAPTILER_KEY
+npx wrangler secret put STADIA_KEY
+npx wrangler secret put GEOAPIFY_KEY
 ```
 
 ## Verification

@@ -3,6 +3,7 @@ ALLOWED_ORIGINS=self
 
 # Optional provider secrets referenced by source config.
 # AZURE_MAPS_KEY=replace-me
+# GEOAPIFY_KEY=replace-me
 # GOOGLE_MAPS_KEY=replace-me
 # MAPBOX_TOKEN=replace-me
 # MAPTILER_KEY=replace-me

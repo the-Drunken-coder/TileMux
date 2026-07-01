@@ -33,11 +33,28 @@ TileMux returns them.
 - Azure Maps/Microsoft: `bing-aerial`, `bing-roads`.
 - Mapbox: `mapbox-streets`, `mapbox-satellite`, `mapbox-outdoors`, `mapbox-dark`.
 - Thunderforest: `thunderforest-landscape`, `thunderforest-outdoors`, `thunderforest-transport-dark`, `thunderforest-spinal-map`, `thunderforest-pioneer`.
-- MapTiler: `maptiler-satellite`, `maptiler-osm-dark`.
+- MapTiler: `maptiler-satellite`, `maptiler-osm-dark`, `openmaptiles-dark-matter`.
 
 These are enabled by default so the app has real basemaps immediately. Each
 source uses `cachePolicy: "respect-upstream"` so TileMux forwards upstream cache
 behavior instead of inventing its own cache lifetime.
+
+`openmaptiles-dark-matter` vendors the open OpenMapTiles Dark Matter style JSON.
+The style points vector tiles at TileMux's `/tiles/openmaptiles-dark-matter/*`
+route, which substitutes the server-side `MAPTILER_KEY` before requesting
+MapTiler's `v3-openmaptiles` vector tiles. Glyphs and sprites use the public
+OpenMapTiles-hosted URLs from the upstream style.
+
+## Configured Disabled Sources
+
+- `stadia-alidade-smooth-dark`: Stadia Maps Alidade Smooth Dark raster XYZ tiles.
+  Enable after setting `STADIA_KEY`.
+- `geoapify-dark-matter-dark-grey`: Geoapify Dark Matter Dark Grey raster XYZ
+  tiles. Enable after setting `GEOAPIFY_KEY`.
+
+These are defined in `src/worker/sources.ts` but are not included in the public
+catalog until their Worker secrets are available. Keeping them disabled avoids
+showing browser users sources that can only return missing-secret errors.
 
 Some public providers require normal browser request headers for interactive map
 use. Those sources can set `provider.browserTileTemplate`; generated browser
@@ -81,6 +98,8 @@ Migrated TileRelay sources use these Worker secret names:
 - `MAPBOX_TOKEN`
 - `THUNDERFOREST_KEY`
 - `MAPTILER_KEY`
+- `STADIA_KEY`
+- `GEOAPIFY_KEY`
 
 ## R2 XYZ Example
 

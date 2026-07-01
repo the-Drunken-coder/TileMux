@@ -4,7 +4,13 @@ export const FALLBACK_MAX_ZOOM = 22;
 export const FALLBACK_MIN_ZOOM = 0;
 
 export function sourceMaxZoom(source?: SanitizedSource): number {
-  return source?.sourceMaxzoom ?? source?.maxzoom ?? FALLBACK_MAX_ZOOM;
+  if (!source) {
+    return FALLBACK_MAX_ZOOM;
+  }
+
+  return source.format === "raster"
+    ? source.sourceMaxzoom ?? source.maxzoom
+    : source.maxzoom;
 }
 
 export function sourceMinZoom(source?: SanitizedSource): number {

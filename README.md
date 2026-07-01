@@ -4,13 +4,17 @@ TileMux is a Cloudflare Worker app for map tile hosting, map tile proxying, and 
 
 V0 is intentionally small: a TypeScript source registry, one API key for `/api/*`, static Worker assets, R2-backed tiles, remote XYZ proxying, and a debug-grid source that works without external services.
 
-Important v0 boundary: TileMux currently handles raster-style XYZ providers well. Full vector provider gateway support usually needs style JSON rewriting, glyph proxying, sprite proxying, and vector tile conventions that are intentionally left for later.
+Important v0 boundary: TileMux handles raster-style XYZ providers well. It also
+serves the bundled OpenMapTiles Dark Matter vector style, but broader vector
+provider gateway support still needs source-specific style JSON rewriting, glyph
+proxying, sprite proxying, and vector tile conventions.
 
 ## What V0 Supports
 
 - `debug-grid` generated SVG/PNG raster tiles.
 - `remote-xyz` tile proxying with server-side provider secret substitution.
 - TileRelay raster sources, including keyed Google, Azure Maps, Mapbox, Thunderforest, and MapTiler sources.
+- OpenMapTiles Dark Matter vector tiles through the existing MapTiler key.
 - `r2-xyz` tiles from an R2 bucket through the `TILE_BUCKET` binding.
 - TileJSON and generated MapLibre raster styles.
 - `/compare` with two synchronized MapLibre maps.
@@ -133,6 +137,8 @@ npx wrangler secret put AZURE_MAPS_KEY
 npx wrangler secret put MAPBOX_TOKEN
 npx wrangler secret put THUNDERFOREST_KEY
 npx wrangler secret put MAPTILER_KEY
+npx wrangler secret put STADIA_KEY       # optional disabled source
+npx wrangler secret put GEOAPIFY_KEY     # optional disabled source
 ```
 
 ## Adding An R2 XYZ Source

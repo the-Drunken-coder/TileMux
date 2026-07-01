@@ -26,6 +26,7 @@ const EXPECTED_PUBLIC_SOURCE_IDS = [
   "thunderforest-pioneer",
   "maptiler-satellite",
   "maptiler-osm-dark",
+  "openmaptiles-dark-matter",
   "openmaps-opentopomap",
   "openmaps-openhikingmap",
   "local-r2",
@@ -265,6 +266,29 @@ describe("Worker routes", () => {
       maxzoom: 16,
       bounds: [-77.04, 38.889, -76.995, 38.91],
     });
+  });
+
+  it("returns the vendored OpenMapTiles Dark Matter vector style", async () => {
+    const response = await fetchPath("/styles/openmaptiles-dark-matter.json");
+    const style = (await response.json()) as {
+      sources: Record<string, { tiles: string[]; maxzoom: number }>;
+      glyphs: string;
+      sprite: string;
+      layers: unknown[];
+    };
+
+    expect(response.status).toBe(200);
+    expect(style.sources.openmaptiles).toMatchObject({
+      tiles: ["/tiles/openmaptiles-dark-matter/{z}/{x}/{y}.pbf"],
+      maxzoom: 14,
+    });
+    expect(style.glyphs).toBe(
+      "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
+    );
+    expect(style.sprite).toBe(
+      "https://openmaptiles.github.io/dark-matter-gl-style/sprite",
+    );
+    expect(style.layers.length).toBeGreaterThan(0);
   });
 
   it("keeps API style and TileJSON routes private", async () => {
