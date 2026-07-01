@@ -17,7 +17,6 @@ TileMux returns them.
 ## Bundled Open Sources
 
 - `osm-standard`: OpenStreetMap Standard raster tiles.
-- `osm-standard-inverted`: OpenStreetMap Standard raster tiles with RGB values inverted by TileMux.
 - `cartoRaster`: CARTO Voyager raster tiles.
 - `esri-world-imagery`: Esri World Imagery raster tiles.
 - `usgs-topo`: USGS Topo raster tiles.
@@ -70,13 +69,6 @@ keeps provider secrets and non-public templates out of `/sources.json`.
 Template placeholders `{z}`, `{x}`, `{y}`, and `{ext}` come from the tile request. Secret placeholders are mapped to Worker env secret names. When `sourceMaxzoom` is lower than `maxzoom`, TileMux accepts the requested zoom but fetches the matching parent tile from upstream.
 
 The bundled `example-remote` source stays disabled by default. To enable it, replace the URL template with a real provider URL, set the provider secret locally or through Wrangler, choose a cache policy, and change `enabled` to `true`.
-
-## Raster Transforms
-
-Sources can set `transforms: [{ kind: "invert-raster" }]` to return real
-transformed PNG tiles from TileMux. This is used by `osm-standard-inverted`;
-the browser, TileJSON, sample tile tester, and API all receive the transformed
-tile image.
 
 Migrated TileRelay sources use these Worker secret names:
 

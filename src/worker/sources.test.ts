@@ -4,7 +4,6 @@ import { SOURCES, listEnabledSources, sanitizeSource } from "./sources";
 const ENABLED_SOURCE_IDS = [
   "debug-grid",
   "osm-standard",
-  "osm-standard-inverted",
   "cartoRaster",
   "esri-world-imagery",
   "google-maps",

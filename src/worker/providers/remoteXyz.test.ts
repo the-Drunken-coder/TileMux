@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { decode, encode } from "fast-png";
 import type { RuntimeEnv } from "../env";
 import { SOURCES, type RemoteXyzSource } from "../sources";
 import { HttpError } from "../utils/http";
@@ -8,12 +7,6 @@ import { remoteXyzResponse, resolveRemoteTileUrl } from "./remoteXyz";
 afterEach(() => {
   vi.unstubAllGlobals();
 });
-
-function bytesToArrayBuffer(bytes: Uint8Array): ArrayBuffer {
-  const copy = new Uint8Array(bytes.byteLength);
-  copy.set(bytes);
-  return copy.buffer;
-}
 
 describe("remote XYZ provider", () => {
   it("resolves URL templates with provider secrets", () => {
@@ -97,68 +90,6 @@ describe("remote XYZ provider", () => {
     );
 
     expect(response.headers.get("Content-Type")).toBe("image/png");
-  });
-
-  it("applies raster inversion transforms to upstream PNG tiles", async () => {
-    const upstreamPng = encode({
-      width: 1,
-      height: 1,
-      channels: 4,
-      depth: 8,
-      data: new Uint8Array([10, 20, 30, 255]),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(
-        async () =>
-          new Response(bytesToArrayBuffer(upstreamPng), {
-            headers: { "Content-Type": "image/png" },
-          }),
-      ),
-    );
-
-    const response = await remoteXyzResponse(
-      new Request("https://tilemux.test/tiles/osm-standard-inverted/1/0/1.png"),
-      {} as RuntimeEnv,
-      SOURCES["osm-standard-inverted"],
-      { z: 1, x: 0, y: 1, ext: "png" },
-    );
-    const decoded = decode(await response.arrayBuffer());
-
-    expect(response.status).toBe(200);
-    expect(response.headers.get("Content-Type")).toBe("image/png");
-    expect(Array.from(decoded.data)).toEqual([245, 235, 225, 255]);
-  });
-
-  it("inverts indexed PNG palette colors rather than palette indexes", async () => {
-    const upstreamPng = encode({
-      width: 1,
-      height: 1,
-      channels: 1,
-      depth: 8,
-      palette: [[10, 20, 30]],
-      data: new Uint8Array([0]),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(
-        async () =>
-          new Response(bytesToArrayBuffer(upstreamPng), {
-            headers: { "Content-Type": "image/png" },
-          }),
-      ),
-    );
-
-    const response = await remoteXyzResponse(
-      new Request("https://tilemux.test/tiles/osm-standard-inverted/1/0/1.png"),
-      {} as RuntimeEnv,
-      SOURCES["osm-standard-inverted"],
-      { z: 1, x: 0, y: 1, ext: "png" },
-    );
-    const decoded = decode(await response.arrayBuffer());
-
-    expect(decoded.channels).toBe(3);
-    expect(Array.from(decoded.data)).toEqual([245, 235, 225]);
   });
 
   it("sends configured upstream request headers", async () => {
