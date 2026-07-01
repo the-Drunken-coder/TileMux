@@ -93,6 +93,9 @@ export type SanitizedSource = Pick<
   supportsGeneratedStyle: boolean;
 };
 
+const TILEMUX_USER_AGENT =
+  "TileMux/0.0 (+https://github.com/the-Drunken-coder/TileMux)";
+
 export const SOURCES = {
   "debug-grid": {
     id: "debug-grid",
@@ -115,8 +118,7 @@ export const SOURCES = {
       kind: "remote-xyz",
       template: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       requestHeaders: {
-        "User-Agent":
-          "TileMux/0.0 (+https://github.com/the-Drunken-coder/TileMux)",
+        "User-Agent": TILEMUX_USER_AGENT,
       },
     },
     format: "raster",
@@ -135,6 +137,9 @@ export const SOURCES = {
     provider: {
       kind: "remote-xyz",
       template: "https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png",
+      requestHeaders: {
+        "User-Agent": TILEMUX_USER_AGENT,
+      },
     },
     format: "raster",
     tileSize: 256,
@@ -152,6 +157,9 @@ export const SOURCES = {
     provider: {
       kind: "remote-xyz",
       template: "https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png",
+      requestHeaders: {
+        "User-Agent": TILEMUX_USER_AGENT,
+      },
     },
     format: "raster",
     tileSize: 256,

@@ -27,4 +27,21 @@ describe("sources", () => {
     expect("secretPlaceholders" in sanitized).toBe(false);
     expect("requestHeaders" in sanitized).toBe(false);
   });
+
+  it("identifies TileMux to public remote tile providers", () => {
+    for (const sourceId of [
+      "osm-standard",
+      "openmaps-opentopomap",
+      "openmaps-openhikingmap",
+    ] as const) {
+      const source = SOURCES[sourceId];
+
+      expect(source.provider.kind).toBe("remote-xyz");
+      if (source.provider.kind === "remote-xyz") {
+        expect(source.provider.requestHeaders?.["User-Agent"]).toContain(
+          "TileMux/0.0",
+        );
+      }
+    }
+  });
 });
