@@ -114,6 +114,7 @@ type RemoteRasterSourceOptions = {
   attribution: string;
   browserTileTemplate?: string;
   secretPlaceholders?: Record<string, ProviderSecretName>;
+  transforms?: SourceTransform[];
 };
 
 function remoteRasterSource({
@@ -126,6 +127,7 @@ function remoteRasterSource({
   attribution,
   browserTileTemplate,
   secretPlaceholders,
+  transforms,
 }: RemoteRasterSourceOptions): RemoteXyzSource {
   return {
     id,
@@ -145,6 +147,7 @@ function remoteRasterSource({
     ext,
     attribution,
     cachePolicy: "respect-upstream",
+    transforms,
     enabled: true,
   };
 }
@@ -172,6 +175,16 @@ export const SOURCES = {
     maxzoom: 22,
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+  }),
+  "osm-standard-inverted": remoteRasterSource({
+    id: "osm-standard-inverted",
+    name: "OpenStreetMap Standard Inverted",
+    template: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    sourceMaxzoom: 19,
+    maxzoom: 22,
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+    transforms: [{ kind: "invert-raster" }],
   }),
   cartoRaster: remoteRasterSource({
     id: "cartoRaster",

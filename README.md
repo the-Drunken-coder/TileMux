@@ -10,6 +10,7 @@ Important v0 boundary: TileMux currently handles raster-style XYZ providers well
 
 - `debug-grid` generated SVG/PNG raster tiles.
 - `remote-xyz` tile proxying with server-side provider secret substitution.
+- `invert-raster` transformed raster sources, including inverted OpenStreetMap.
 - TileRelay raster sources, including keyed Google, Azure Maps, Mapbox, Thunderforest, and MapTiler sources.
 - `r2-xyz` tiles from an R2 bucket through the `TILE_BUCKET` binding.
 - TileJSON and generated MapLibre raster styles.

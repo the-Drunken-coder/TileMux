@@ -1,5 +1,6 @@
 import type { ProviderSecretName, RuntimeEnv } from "../env";
 import type { RemoteXyzSource } from "../sources";
+import { transformRasterResponse } from "../transforms/raster";
 import type { TileCoordinate } from "../utils/zxy";
 import { contentTypeForExtension } from "../utils/contentTypes";
 import {
@@ -161,6 +162,18 @@ export async function remoteXyzResponse(
 
   if (etag) headers.set("ETag", etag);
   if (lastModified) headers.set("Last-Modified", lastModified);
+
+  if (source.transforms?.length && upstream.ok && request.method !== "HEAD") {
+    const transformed = await transformRasterResponse(upstream, source.transforms);
+    if (transformed) {
+      headers.set("Content-Type", "image/png");
+      headers.delete("ETag");
+      return new Response(transformed, {
+        status: upstream.status,
+        headers,
+      });
+    }
+  }
 
   return new Response(request.method === "HEAD" ? null : upstream.body, {
     status: upstream.status,

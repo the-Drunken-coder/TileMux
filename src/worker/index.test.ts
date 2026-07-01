@@ -6,6 +6,7 @@ const TEST_KEY = "test-tilemux-key";
 const EXPECTED_PUBLIC_SOURCE_IDS = [
   "debug-grid",
   "osm-standard",
+  "osm-standard-inverted",
   "cartoRaster",
   "esri-world-imagery",
   "google-maps",
