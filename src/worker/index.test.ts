@@ -279,7 +279,9 @@ describe("Worker routes", () => {
 
     expect(response.status).toBe(200);
     expect(style.sources.openmaptiles).toMatchObject({
-      tiles: ["/tiles/openmaptiles-dark-matter/{z}/{x}/{y}.pbf"],
+      tiles: [
+        "https://tilemux.test/tiles/openmaptiles-dark-matter/{z}/{x}/{y}.pbf",
+      ],
       maxzoom: 14,
     });
     expect(style.glyphs).toBe(

@@ -2,12 +2,55 @@ import { jsonResponse } from "./utils/http";
 import { tileUrlForRequest } from "./tilejson";
 import type { TileSource } from "./sources";
 
+type StyleSource = Record<string, unknown> & {
+  tiles?: unknown;
+};
+
+type StyleDocument = Record<string, unknown> & {
+  sources?: Record<string, StyleSource>;
+};
+
+function absoluteTileUrl(request: Request, tileUrl: string): string {
+  return tileUrl.startsWith("/")
+    ? `${new URL(request.url).origin}${tileUrl}`
+    : tileUrl;
+}
+
+function styleWithAbsoluteTileUrls(
+  request: Request,
+  style: Record<string, unknown>,
+): Record<string, unknown> {
+  const document = style as StyleDocument;
+  if (!document.sources) {
+    return style;
+  }
+
+  return {
+    ...document,
+    sources: Object.fromEntries(
+      Object.entries(document.sources).map(([sourceId, styleSource]) => [
+        sourceId,
+        {
+          ...styleSource,
+          tiles: Array.isArray(styleSource.tiles)
+            ? styleSource.tiles.map((tileUrl) =>
+                typeof tileUrl === "string"
+                  ? absoluteTileUrl(request, tileUrl)
+                  : tileUrl,
+              )
+            : styleSource.tiles,
+        },
+      ]),
+    ),
+  };
+}
+
 export function styleResponseForSource(
   request: Request,
   source: TileSource,
 ): Response {
   if (source.style) {
-    return jsonResponse(source.style);
+    return jsonResponse(styleWithAbsoluteTileUrls(request, source.style));
   }
 
   if (source.format !== "raster") {
