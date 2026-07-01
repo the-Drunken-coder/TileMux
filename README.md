@@ -179,6 +179,9 @@ Each source has a `cachePolicy`:
 
 ## Deploy
 
+Deployment status, Cloudflare account details, bindings, and verification
+commands are documented in `docs/DEPLOYMENT.md`.
+
 ```bash
 npm run build
 npx wrangler secret put TILEMUX_API_KEY
