@@ -12,6 +12,7 @@ export type DebugGridProvider = {
 export type RemoteXyzProvider = {
   kind: "remote-xyz";
   template: string;
+  browserTileTemplate?: string;
   secretPlaceholders?: Record<string, ProviderSecretName>;
   requestHeaders?: Record<string, string>;
 };
@@ -89,6 +90,7 @@ export type SanitizedSource = Pick<
   | "cachePolicy"
 > & {
   kind: ProviderKind;
+  browserTileTemplate?: string;
   supportsTileJson: boolean;
   supportsGeneratedStyle: boolean;
 };
@@ -137,6 +139,7 @@ export const SOURCES = {
     provider: {
       kind: "remote-xyz",
       template: "https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png",
+      browserTileTemplate: "https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png",
       requestHeaders: {
         "User-Agent": TILEMUX_USER_AGENT,
       },
@@ -157,6 +160,7 @@ export const SOURCES = {
     provider: {
       kind: "remote-xyz",
       template: "https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png",
+      browserTileTemplate: "https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png",
       requestHeaders: {
         "User-Agent": TILEMUX_USER_AGENT,
       },
@@ -255,6 +259,10 @@ export function sanitizeSource(source: TileSource): SanitizedSource {
     ext: source.ext,
     attribution: source.attribution,
     cachePolicy: source.cachePolicy,
+    browserTileTemplate:
+      source.provider.kind === "remote-xyz"
+        ? source.provider.browserTileTemplate
+        : undefined,
     supportsTileJson: source.provider.kind !== "pmtiles-r2",
     supportsGeneratedStyle: source.format === "raster" || Boolean(source.style),
   };

@@ -24,6 +24,11 @@ These are enabled by default so the app has real basemaps immediately. Each
 source uses `cachePolicy: "respect-upstream"` so TileMux forwards upstream cache
 behavior instead of inventing its own cache lifetime.
 
+Some public providers require normal browser request headers for interactive map
+use. Those sources can set `provider.browserTileTemplate`; generated browser
+styles and TileJSON will use that public upstream URL directly, while TileMux
+keeps provider secrets and non-public templates out of `/sources.json`.
+
 ## Remote XYZ Example
 
 ```ts
@@ -33,6 +38,7 @@ behavior instead of inventing its own cache lifetime.
   provider: {
     kind: "remote-xyz",
     template: "https://example.com/tiles/{z}/{x}/{y}.{ext}?token={PROVIDER_TOKEN}",
+    browserTileTemplate: "https://provider.example/tiles/{z}/{x}/{y}.{ext}",
     secretPlaceholders: {
       PROVIDER_TOKEN: "CUSTOM_PROVIDER_KEY",
     },

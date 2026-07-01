@@ -33,6 +33,11 @@ Remote sources such as OpenStreetMap and OpenTopoMap are ordinary `remote-xyz`
 provider instances, not bespoke adapters. Add a new provider adapter only when
 the retrieval mechanics change.
 
+For providers that require real browser request headers, a source can define
+`provider.browserTileTemplate`. Generated browser styles and TileJSON then point
+at the public upstream tile URL directly, while TileMux still keeps provider
+secrets out of public source metadata.
+
 Disabled sources are not returned by `/sources.json` or `/api/sources` and
 behave like unknown sources on public routes.
 

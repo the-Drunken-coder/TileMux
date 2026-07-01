@@ -88,6 +88,7 @@ Edit `src/worker/sources.ts`:
   provider: {
     kind: "remote-xyz",
     template: "https://provider.example/tiles/{z}/{x}/{y}.{ext}?token={PROVIDER_TOKEN}",
+    browserTileTemplate: "https://provider.example/tiles/{z}/{x}/{y}.{ext}",
     secretPlaceholders: {
       PROVIDER_TOKEN: "CUSTOM_PROVIDER_KEY",
     },
@@ -110,6 +111,9 @@ npx wrangler secret put CUSTOM_PROVIDER_KEY
 ```
 
 TileMux never forwards `TILEMUX_API_KEY` upstream and never returns provider secrets in `/sources.json` or `/api/sources`.
+
+Use `browserTileTemplate` only for public provider URLs that are safe for the
+browser to request directly. Leave it unset when TileMux must proxy the tile.
 
 The shipped `example-remote` source is disabled by default so local setup does not depend on a real provider. To test the remote gateway path:
 

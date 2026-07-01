@@ -26,6 +26,17 @@ describe("sources", () => {
     expect("template" in sanitized).toBe(false);
     expect("secretPlaceholders" in sanitized).toBe(false);
     expect("requestHeaders" in sanitized).toBe(false);
+    expect(sanitized.browserTileTemplate).toBeUndefined();
+  });
+
+  it("exposes explicit browser tile templates for direct browser sources", () => {
+    const sanitized = sanitizeSource(SOURCES["openmaps-opentopomap"]);
+
+    expect(sanitized.browserTileTemplate).toBe(
+      "https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png",
+    );
+    expect("provider" in sanitized).toBe(false);
+    expect("requestHeaders" in sanitized).toBe(false);
   });
 
   it("identifies TileMux to public remote tile providers", () => {

@@ -172,6 +172,26 @@ describe("Worker routes", () => {
     );
   });
 
+  it("uses direct browser tile templates when a provider requires browser headers", async () => {
+    const styleResponse = await fetchPath("/styles/openmaps-opentopomap.json");
+    const tileJsonResponse = await fetchPath("/tilejson/openmaps-opentopomap.json");
+    const style = (await styleResponse.json()) as {
+      sources: Record<string, { tiles: string[] }>;
+    };
+    const tileJson = (await tileJsonResponse.json()) as {
+      tiles: string[];
+    };
+
+    expect(styleResponse.status).toBe(200);
+    expect(tileJsonResponse.status).toBe(200);
+    expect(style.sources["openmaps-opentopomap"].tiles[0]).toBe(
+      "https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png",
+    );
+    expect(tileJson.tiles[0]).toBe(
+      "https://tile.openmaps.fr/opentopomap/{z}/{x}/{y}.png",
+    );
+  });
+
   it("keeps API style and TileJSON routes private", async () => {
     const style = await fetchPath("/api/styles/debug-grid.json");
     const tileJson = await fetchPath("/api/tilejson/debug-grid.json");

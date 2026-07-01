@@ -8,6 +8,7 @@ export type SanitizedSource = {
   maxzoom: number;
   ext: string;
   attribution?: string;
+  browserTileTemplate?: string;
   supportsTileJson: boolean;
   supportsGeneratedStyle: boolean;
 };
@@ -45,6 +46,24 @@ export function tileUrl(
   source: SanitizedSource,
   tile: { z: number; x: number; y: number },
 ): string {
+  if (source.browserTileTemplate) {
+    return source.browserTileTemplate.replace(
+      /\{([A-Za-z0-9_]+)\}/g,
+      (match, key: string) => {
+        const values: Record<string, string | number> = {
+          sourceId: source.id,
+          z: tile.z,
+          x: tile.x,
+          y: tile.y,
+          ext: source.ext,
+        };
+        return values[key] === undefined
+          ? match
+          : encodeURIComponent(String(values[key]));
+      },
+    );
+  }
+
   return `/tiles/${encodeURIComponent(source.id)}/${tile.z}/${tile.x}/${tile.y}.${
     source.ext
   }`;

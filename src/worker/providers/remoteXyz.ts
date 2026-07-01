@@ -59,6 +59,7 @@ function resolveRemoteTileUrlWithSecrets(
 
 function safeUpstreamHeaders(request: Request, source: RemoteXyzSource): Headers {
   const headers = new Headers();
+  const requestUrl = new URL(request.url);
   const accept = request.headers.get("Accept");
   const ifNoneMatch = request.headers.get("If-None-Match");
   const ifModifiedSince = request.headers.get("If-Modified-Since");
@@ -67,6 +68,10 @@ function safeUpstreamHeaders(request: Request, source: RemoteXyzSource): Headers
     source.provider.requestHeaders || {},
   )) {
     headers.set(name, value);
+  }
+
+  if (!headers.has("Referer")) {
+    headers.set("Referer", `${requestUrl.origin}/`);
   }
 
   if (accept) headers.set("Accept", accept);

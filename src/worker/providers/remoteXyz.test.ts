@@ -86,6 +86,7 @@ describe("remote XYZ provider", () => {
     const headers = new Headers(init?.headers);
 
     expect(headers.get("User-Agent")).toContain("TileMux/0.0");
+    expect(headers.get("Referer")).toBe("https://tilemux.test/");
   });
 
   it("redacts substituted provider secrets from upstream failures", async () => {
