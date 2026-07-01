@@ -7,6 +7,7 @@ import {
   type SanitizedSource,
   type ViewState,
 } from "./api";
+import { clampViewZoom, comparisonMaxZoom, sourceMaxZoom } from "./zoom";
 
 const initialView: ViewState = {
   center: [0, 0],
@@ -69,20 +70,40 @@ export default function App() {
 
   const leftSource = sourceById.get(leftSourceId);
   const rightSource = sourceById.get(rightSourceId);
+  const syncedMaxZoom = comparisonMaxZoom(leftSource, rightSource);
+  const leftMaxZoom = syncEnabled ? syncedMaxZoom : sourceMaxZoom(leftSource);
+  const rightMaxZoom = syncEnabled ? syncedMaxZoom : sourceMaxZoom(rightSource);
+
+  useEffect(() => {
+    setViews((current) => {
+      const left = clampViewZoom(current.left, leftMaxZoom);
+      const right = clampViewZoom(current.right, rightMaxZoom);
+
+      return left === current.left && right === current.right
+        ? current
+        : { left, right };
+    });
+  }, [leftMaxZoom, rightMaxZoom]);
 
   function updateView(side: Side, nextView: ViewState) {
+    const maxZoom = side === "left" ? leftMaxZoom : rightMaxZoom;
+    const boundedView = clampViewZoom(nextView, maxZoom);
+
     setViews((current) => {
       if (syncEnabled) {
-        return { left: nextView, right: nextView };
+        return { left: boundedView, right: boundedView };
       }
 
-      return { ...current, [side]: nextView };
+      return { ...current, [side]: boundedView };
     });
   }
 
   function toggleSync() {
     if (!syncEnabled) {
-      setViews((current) => ({ left: current.left, right: current.left }));
+      setViews((current) => {
+        const view = clampViewZoom(current.left, syncedMaxZoom);
+        return { left: view, right: view };
+      });
     }
     setSyncEnabled((current) => !current);
   }
@@ -129,12 +150,14 @@ export default function App() {
         <MapPane
           title="Left"
           sourceId={leftSourceId}
+          maxZoom={leftMaxZoom}
           view={views.left}
           onViewChange={(view) => updateView("left", view)}
         />
         <MapPane
           title="Right"
           sourceId={rightSourceId}
+          maxZoom={rightMaxZoom}
           view={views.right}
           onViewChange={(view) => updateView("right", view)}
         />

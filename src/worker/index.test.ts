@@ -220,6 +220,7 @@ describe("Worker routes", () => {
       tiles: string[];
       maxzoom: number;
       source_maxzoom: number;
+      exposed_maxzoom: number;
     };
 
     expect(styleResponse.status).toBe(200);
@@ -227,12 +228,13 @@ describe("Worker routes", () => {
     expect(style.sources["google-maps"].tiles[0]).toBe(
       "https://tilemux.test/tiles/google-maps/{z}/{x}/{y}.png",
     );
-    expect(style.sources["google-maps"].maxzoom).toBe(22);
+    expect(style.sources["google-maps"].maxzoom).toBe(20);
     expect(tileJson.tiles[0]).toBe(
       "https://tilemux.test/tiles/google-maps/{z}/{x}/{y}.png",
     );
-    expect(tileJson.maxzoom).toBe(22);
+    expect(tileJson.maxzoom).toBe(20);
     expect(tileJson.source_maxzoom).toBe(20);
+    expect(tileJson.exposed_maxzoom).toBe(22);
   });
 
   it("keeps API style and TileJSON routes private", async () => {

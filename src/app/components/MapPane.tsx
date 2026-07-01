@@ -5,6 +5,7 @@ import { styleUrl, type ViewState } from "../api";
 type MapPaneProps = {
   title: string;
   sourceId: string;
+  maxZoom: number;
   view: ViewState;
   onViewChange: (view: ViewState) => void;
 };
@@ -16,6 +17,7 @@ function almostEqual(left: number, right: number): boolean {
 export function MapPane({
   title,
   sourceId,
+  maxZoom,
   view,
   onViewChange,
 }: MapPaneProps) {
@@ -37,7 +39,8 @@ export function MapPane({
       container: containerRef.current,
       style: styleUrl(sourceId),
       center: view.center,
-      zoom: view.zoom,
+      zoom: Math.min(view.zoom, maxZoom),
+      maxZoom,
       bearing: view.bearing,
       pitch: view.pitch,
       attributionControl: { compact: true },
@@ -69,6 +72,24 @@ export function MapPane({
       mapRef.current = null;
     };
   }, [sourceId]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) {
+      return;
+    }
+
+    map.setMaxZoom(maxZoom);
+    if (map.getZoom() <= maxZoom) {
+      return;
+    }
+
+    applyingViewRef.current = true;
+    map.jumpTo({ zoom: maxZoom });
+    requestAnimationFrame(() => {
+      applyingViewRef.current = false;
+    });
+  }, [maxZoom]);
 
   useEffect(() => {
     const map = mapRef.current;

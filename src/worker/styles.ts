@@ -20,6 +20,7 @@ export function styleResponseForSource(
   // MapLibre's raster pipeline may reject SVG image tiles, so generated debug
   // styles use the PNG debug-grid variant while TileJSON/sample URLs stay SVG.
   const tileExtension = source.provider.kind === "debug-grid" ? "png" : source.ext;
+  const sourceMaxzoom = source.sourceMaxzoom ?? source.maxzoom;
 
   return jsonResponse({
     version: 8,
@@ -29,7 +30,7 @@ export function styleResponseForSource(
         tiles: [tileUrlForRequest(request, source, tileExtension)],
         tileSize: source.tileSize,
         minzoom: source.minzoom,
-        maxzoom: source.maxzoom,
+        maxzoom: sourceMaxzoom,
         attribution: source.attribution || "",
       },
     },
