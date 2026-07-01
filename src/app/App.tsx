@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { DebugPanel } from "./components/DebugPanel";
 import { MapPane } from "./components/MapPane";
 import { SourcePicker } from "./components/SourcePicker";
+import { TileDocs } from "./components/TileDocs";
 import {
   fetchSources,
   type SanitizedSource,
@@ -271,6 +272,8 @@ export default function App() {
         rightView={views.right}
         onError={setLastError}
       />
+
+      <TileDocs source={leftSource} view={views.left} />
     </main>
   );
 }

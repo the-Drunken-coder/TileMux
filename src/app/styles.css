@@ -66,6 +66,7 @@ select {
 .topbar,
 .toolbar,
 .debug-panel,
+.tile-docs,
 .map-pane,
 .error-banner {
   border: 1px solid #2e3637;
@@ -85,7 +86,11 @@ select {
 .topbar p,
 .debug-panel h2,
 .debug-panel h3,
-.debug-panel p {
+.debug-panel p,
+.tile-docs h2,
+.tile-docs h3,
+.tile-docs p,
+.source-summary {
   margin: 0;
 }
 
@@ -96,6 +101,8 @@ select {
 
 .topbar p,
 .debug-panel p,
+.tile-docs p,
+.source-summary dt,
 .pane-title span,
 .source-picker span {
   color: #a7b0ad;
@@ -173,6 +180,71 @@ select {
   padding: 1rem;
 }
 
+.tile-docs {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.tile-docs-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tile-docs h2 {
+  font-size: 1.2rem;
+}
+
+.tile-docs h3 {
+  font-size: 0.95rem;
+}
+
+.source-summary {
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  gap: 0.75rem 1rem;
+}
+
+.source-summary div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.source-summary dd {
+  margin: 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.endpoint-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.endpoint-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.6fr) minmax(280px, 1.4fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.endpoint-value {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: start;
+}
+
+.endpoint-value button {
+  min-width: 5.25rem;
+}
+
+.docs-note {
+  max-width: 70rem;
+}
+
 .sample-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -194,6 +266,13 @@ code {
   background: #0d1112;
 }
 
+.inline-code {
+  border-radius: 4px;
+  padding: 0.05rem 0.25rem;
+  color: #d8f3dc;
+  background: #0d1112;
+}
+
 @media (max-width: 900px) {
   .topbar {
     align-items: stretch;
@@ -202,7 +281,21 @@ code {
 
   .compare-grid,
   .debug-panel,
-  .sample-grid {
+  .sample-grid,
+  .endpoint-row {
+    grid-template-columns: 1fr;
+  }
+
+  .tile-docs-header,
+  .endpoint-value {
+    grid-template-columns: 1fr;
+  }
+
+  .tile-docs-header {
+    display: grid;
+  }
+
+  .source-summary {
     grid-template-columns: 1fr;
   }
 }
